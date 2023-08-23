@@ -1,5 +1,6 @@
 package com.tvtoday.gamelibrary.crosswordgamesdk.views.activities.pastPuzzleCrossWord
 
+import PrefData
 import android.app.Activity
 import android.content.Intent
 import android.text.TextUtils
@@ -10,6 +11,12 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.tvtoday.gamelibrary.crosswordgamesdk.views.activities.englishVargPaheliGameActivity.EnglishVargPahleiGameActivity
 import com.tvtoday.gamelibrary.crosswordgamesdk.views.activities.vargPaheliStartGame.VargPaheliGameActivity
 import com.tvtoday.gamelibrary.R
@@ -17,18 +24,23 @@ import com.tvtoday.gamelibrary.crosswordgamesdk.controller.cleverTap.CleverTapEv
 import com.tvtoday.gamelibrary.crosswordgamesdk.controller.cleverTap.CleverTapEventConstants
 import com.tvtoday.gamelibrary.crosswordgamesdk.views.activities.vargPahleiGameRuleActivity.GameRuleActivity
 
-class PastPuzzleInnerAdapter(private var activity: Activity,
-                             private val list: ArrayList<CrosswordItem?>?
-): RecyclerView.Adapter<PastPuzzleInnerAdapter.ViewHolder>(){
+class PastPuzzleInnerAdapter(
+    private var activity: Activity,
+    private val list: ArrayList<CrosswordItem?>?
+) : RecyclerView.Adapter<PastPuzzleInnerAdapter.ViewHolder>() {
 
-    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view){
+
+    private var startGameInterstitialAd: InterstitialAd? = null
+
+    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         var tvMonths: TextView = view.findViewById(R.id.tvMonths)
         var lLayInner: LinearLayout = view.findViewById(R.id.lLayInner)
         var ivIsCompleted: ImageView = view.findViewById(R.id.ivIsCompleted)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val item= LayoutInflater.from(activity).inflate(R.layout.past_puzzle_rv_inner_layout_crossword,parent,false)
+        val item = LayoutInflater.from(activity)
+            .inflate(R.layout.past_puzzle_rv_inner_layout_crossword, parent, false)
         return ViewHolder(item)
     }
 
@@ -36,32 +48,41 @@ class PastPuzzleInnerAdapter(private var activity: Activity,
         val model = list!![position]
 
         holder.apply {
-            tvMonths.text= model?.date
+            tvMonths.text = model?.date
 
             val mothData = model?.date.toString()
-            val status =  model?.isComplete == true
+            val status = model?.isComplete == true
 
             val dateTime: List<String> = mothData.split(" ")
             val date = dateTime[0]
             val time = dateTime[1]
-            tvMonths.text= date
+            tvMonths.text = date
 
-            if(model?.isComplete == true){
-                ivIsCompleted.visibility= View.VISIBLE
-                lLayInner.isClickable= false
-            }else{
-                ivIsCompleted.visibility= View.GONE
-                lLayInner.isClickable= true
+            if (model?.isComplete == true) {
+                ivIsCompleted.visibility = View.VISIBLE
+                lLayInner.isClickable = false
+            } else {
+                ivIsCompleted.visibility = View.GONE
+                lLayInner.isClickable = true
             }
 
 
-            if(model?.isComplete == false){
+            if (model?.isComplete == false) {
                 lLayInner.setOnClickListener {
 
-                    if(PrefData.getBooleanPrefs(activity, PrefData.Key.ISRuleSHow)){
+                    if (PrefData.getBooleanPrefs(activity, PrefData.Key.ISRuleSHow)) {
 
-                        if(!TextUtils.isEmpty(PrefData.getAppLangaugeStringPrefs(activity,PrefData.Key.CROSSWORD_APP_LANGUAGE)) &&
-                            PrefData.getAppLangaugeStringPrefs(activity,PrefData.Key.CROSSWORD_APP_LANGUAGE).equals("hindi")) {
+                        if (!TextUtils.isEmpty(
+                                PrefData.getAppLangaugeStringPrefs(
+                                    activity,
+                                    PrefData.Key.CROSSWORD_APP_LANGUAGE
+                                )
+                            ) &&
+                            PrefData.getAppLangaugeStringPrefs(
+                                activity,
+                                PrefData.Key.CROSSWORD_APP_LANGUAGE
+                            ).equals("hindi")
+                        ) {
 
                             CleverTapEvent(activity).createOnlyEvent(CleverTapEventConstants.PAST_PUZZLE_VP)
 
@@ -74,9 +95,11 @@ class PastPuzzleInnerAdapter(private var activity: Activity,
                                 "DATE_GAME",
                                 model?.date
                             )
+
+
                             activity.startActivityForResult(intent, 11110)
 
-                        }else{
+                        } else {
                             CleverTapEvent(activity).createOnlyEvent(CleverTapEventConstants.PAST_PUZZLE_CW)
 
                             val intent = Intent(
@@ -91,17 +114,17 @@ class PastPuzzleInnerAdapter(private var activity: Activity,
                             activity.startActivityForResult(intent, 11110)
                         }
                         /////////////////////////////////
-                     /*   val intent = Intent(
-                            activity,
-                            VargPaheliGameActivity::class.java
-                        )
+                        /*   val intent = Intent(
+                               activity,
+                               VargPaheliGameActivity::class.java
+                           )
 
-                        intent.putExtra(
-                            "DATE_GAME",
-                            model?.date
-                        )
-                        activity.startActivityForResult(intent, 11110)*/
-                    }else{
+                           intent.putExtra(
+                               "DATE_GAME",
+                               model?.date
+                           )
+                           activity.startActivityForResult(intent, 11110)*/
+                    } else {
                         val intent = Intent(
                             activity,
                             GameRuleActivity::class.java
@@ -121,6 +144,60 @@ class PastPuzzleInnerAdapter(private var activity: Activity,
 
     override fun getItemCount(): Int {
         return list?.size!!
+    }
+
+    private fun initStartGameAd() {
+
+        var adId = PrefData.getStringPrefs(
+            this.activity, PrefData.Key.CROSSWORD_INTERTITIALS_AD_ID
+        )!!
+        var adRequest = AdRequest.Builder().build()
+        var callBack = object : InterstitialAdLoadCallback() {
+            override fun onAdFailedToLoad(p0: LoadAdError) {
+                startGameInterstitialAd = null;
+                super.onAdFailedToLoad(p0)
+            }
+
+            override fun onAdLoaded(p0: InterstitialAd) {
+                startGameInterstitialAd = p0;
+                super.onAdLoaded(p0)
+            }
+        }
+        InterstitialAd.load(this.activity, adId, adRequest, callBack)
+    }
+
+
+    private fun showStartGameAd(callback: (() -> Unit)? = null) {
+        if (startGameInterstitialAd == null) {
+            if (callback != null) {
+                callback()
+            }
+            initStartGameAd()
+        } else {
+            startGameInterstitialAd?.show(this.activity);
+            startGameInterstitialAd?.fullScreenContentCallback =
+                object : FullScreenContentCallback() {
+                    override fun onAdDismissedFullScreenContent() {
+
+
+                        startGameInterstitialAd = null;
+                        initStartGameAd()
+                        if (callback != null) {
+                            callback();
+                        }
+                        super.onAdDismissedFullScreenContent()
+                    }
+
+                    override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+                        startGameInterstitialAd = null;
+                        initStartGameAd()
+                        if (callback != null) {
+                            callback();
+                        }
+                    }
+                }
+        }
+
     }
 
 }

@@ -13,6 +13,12 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.tvtoday.gamelibrary.R
 import com.tvtoday.gamelibrary.shabdjaalgamesdk.shabdcontroller.cleverTap.CleverTapEventShabdjal
 import com.tvtoday.gamelibrary.shabdjaalgamesdk.shabdcontroller.cleverTap.CleverTapShabdjalConstants
@@ -22,19 +28,23 @@ import com.tvtoday.gamelibrary.shabdjaalgamesdk.shabdviews.activities.englishSha
 import java.util.*
 
 class PastPuzzleInnerAdapterShabdjaal(
-    private var activity: Activity,
-    private val list: ArrayList<ShabdjaalItem?>?
-): RecyclerView.Adapter<PastPuzzleInnerAdapterShabdjaal.ViewHolder>(){
+    private var activity: Activity, private val list: ArrayList<ShabdjaalItem?>?
 
 
-    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view){
+) : RecyclerView.Adapter<PastPuzzleInnerAdapterShabdjaal.ViewHolder>() {
+
+
+    private var startGameInterstitialAd: InterstitialAd? = null
+
+    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         var tvMonths: TextView = view.findViewById(R.id.tvMonths)
         var ivIsCompleted: ImageView = view.findViewById(R.id.ivIsCompleted)
         var lLayMain: LinearLayout = view.findViewById(R.id.lLayMain)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val item= LayoutInflater.from(activity).inflate(R.layout.past_puzzle_rv_inner_layout_shabdjaal,parent,false)
+        val item = LayoutInflater.from(activity)
+            .inflate(R.layout.past_puzzle_rv_inner_layout_shabdjaal, parent, false)
         return ViewHolder(item)
     }
 
@@ -51,52 +61,74 @@ class PastPuzzleInnerAdapterShabdjaal(
             val time = dateTime[1]
 
 
-         /*   val inputFormatter: DateTimeFormatter =
-                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH)
-            val outputFormatter: DateTimeFormatter =
-                DateTimeFormatter.ofPattern("dd-MM-yyy", Locale.ENGLISH)
-            val date: LocalDate = LocalDate.parse(mothData, inputFormatter)
-            val formattedDate: String = outputFormatter.format(date)
+            /*   val inputFormatter: DateTimeFormatter =
+                   DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH)
+               val outputFormatter: DateTimeFormatter =
+                   DateTimeFormatter.ofPattern("dd-MM-yyy", Locale.ENGLISH)
+               val date: LocalDate = LocalDate.parse(mothData, inputFormatter)
+               val formattedDate: String = outputFormatter.format(date)
 
-            Log.e("DDD",formattedDate.toString())*/
-            tvMonths.text= date.toString()
+               Log.e("DDD",formattedDate.toString())*/
+            tvMonths.text = date.toString()
 
-            if(model?.isComplete==true){
+            if (model?.isComplete == true) {
                 lLayMain.isClickable = false
-                ivIsCompleted.visibility= View.VISIBLE
-            }else{
+                ivIsCompleted.visibility = View.VISIBLE
+            } else {
                 lLayMain.isClickable = true
-                ivIsCompleted.visibility= View.GONE
+                ivIsCompleted.visibility = View.GONE
             }
 
-            if(model?.isComplete==false){
+            if (model?.isComplete == false) {
                 lLayMain.setOnClickListener {
-                    ivIsCompleted.visibility= View.GONE
-                    if(PrefDataShabdjal.getBooleanPrefs(activity, PrefDataShabdjal.Key.ISRuleSHow)) {
+                    ivIsCompleted.visibility = View.GONE
+                    if (PrefDataShabdjal.getBooleanPrefs(
+                            activity, PrefDataShabdjal.Key.ISRuleSHow
+                        )
+                    ) {
 
-                        if(!TextUtils.isEmpty(PrefDataShabdjal.getAppLanguageStringPrefs(activity,PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE)) &&
-                            PrefDataShabdjal.getAppLanguageStringPrefs(activity,PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE).equals("hindi")) {
+                        if (!TextUtils.isEmpty(
+                                PrefDataShabdjal.getAppLanguageStringPrefs(
+                                    activity, PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE
+                                )
+                            ) && PrefDataShabdjal.getAppLanguageStringPrefs(
+                                activity, PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE
+                            ).equals("hindi")
+                        ) {
 
                             CleverTapEventShabdjal(activity).createOnlyEvent(
-                                CleverTapShabdjalConstants.PAST_PUZZLE_SHABJAAL)
+                                CleverTapShabdjalConstants.PAST_PUZZLE_SHABJAAL
+                            )
 
-                            PrefDataShabdjal.setStringPrefs(activity,PrefDataShabdjal.Key.DATE_FOR_LANGUAGE_CANGE_PART,mothData)
+                            PrefDataShabdjal.setStringPrefs(
+                                activity,
+                                PrefDataShabdjal.Key.DATE_FOR_LANGUAGE_CANGE_PART,
+                                mothData
+                            )
                             val intent = Intent(activity, ShabdjaalPlayGameActivity::class.java)
-                            intent.putExtra("Date",mothData)
+                            intent.putExtra("Date", mothData)
+
                             activity.startActivityForResult(intent, 220)
 
-                        }else{
+
+                        } else {
                             CleverTapEventShabdjal(activity).createOnlyEvent(
-                                CleverTapShabdjalConstants.PAST_PUZZLE_WORD_SEARCH)
-                            PrefDataShabdjal.setStringPrefs(activity,PrefDataShabdjal.Key.DATE_FOR_LANGUAGE_CANGE_PART,mothData)
-                            val intent = Intent(activity, EnglishShabdjaalPlayGameActivity::class.java)
-                            intent.putExtra("Date",mothData)
+                                CleverTapShabdjalConstants.PAST_PUZZLE_WORD_SEARCH
+                            )
+                            PrefDataShabdjal.setStringPrefs(
+                                activity,
+                                PrefDataShabdjal.Key.DATE_FOR_LANGUAGE_CANGE_PART,
+                                mothData
+                            )
+                            val intent =
+                                Intent(activity, EnglishShabdjaalPlayGameActivity::class.java)
+                            intent.putExtra("Date", mothData)
                             activity.startActivityForResult(intent, 220)
                         }
 
-                    }else{
+                    } else {
                         val intent = Intent(activity, GameRuleShabdActivity::class.java)
-                        intent.putExtra("Date",mothData)
+                        intent.putExtra("Date", mothData)
                         activity.startActivityForResult(intent, 220)
                     }
 
@@ -107,6 +139,63 @@ class PastPuzzleInnerAdapterShabdjaal(
 
         }
     }
+
+
+    private fun initStartGameAd() {
+
+        var adId = PrefDataShabdjal.getStringPrefs(
+            this.activity, PrefDataShabdjal.Key.SHABDJAAL_INTERTITIAL_ID
+        )!!
+        var adRequest = AdRequest.Builder().build()
+        var callBack = object : InterstitialAdLoadCallback() {
+            override fun onAdFailedToLoad(p0: LoadAdError) {
+                startGameInterstitialAd = null;
+                super.onAdFailedToLoad(p0)
+            }
+
+            override fun onAdLoaded(p0: InterstitialAd) {
+                startGameInterstitialAd = p0;
+                super.onAdLoaded(p0)
+            }
+        }
+        InterstitialAd.load(this.activity, adId, adRequest, callBack)
+    }
+
+
+    private fun showStartGameAd(callback: (() -> Unit)? = null) {
+        if (startGameInterstitialAd == null) {
+            if (callback != null) {
+                callback();
+            }
+            initStartGameAd()
+
+        } else {
+            startGameInterstitialAd?.show(this.activity);
+            startGameInterstitialAd?.fullScreenContentCallback =
+                object : FullScreenContentCallback() {
+                    override fun onAdDismissedFullScreenContent() {
+
+
+                        startGameInterstitialAd = null;
+                        initStartGameAd()
+                        if (callback != null) {
+                            callback();
+                        }
+                        super.onAdDismissedFullScreenContent()
+                    }
+
+                    override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+                        startGameInterstitialAd = null;
+                        initStartGameAd()
+                        if (callback != null) {
+                            callback();
+                        }
+                    }
+                }
+        }
+
+    }
+
 
     override fun getItemCount(): Int {
         return list?.size!!
