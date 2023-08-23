@@ -36,7 +36,6 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.navigation.NavigationView
 import com.tvtoday.gamelibrary.R
-import com.tvtoday.gamelibrary.shabdamgamesdk.pref.CommonPreference
 import com.tvtoday.gamelibrary.shabdjaalgamesdk.shabd_word_search.Word
 import com.tvtoday.gamelibrary.shabdjaalgamesdk.shabd_word_search.WordSearchView
 import com.tvtoday.gamelibrary.shabdjaalgamesdk.shabdcontroller.`interface`.RecyclerViewOnClickShabdjal
@@ -74,15 +73,16 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
 
     private val compositeDisposable = CompositeDisposable()
     private val apiService: ApiServiceShabdjal? = RetrofitClientShabdjal.getInstance()
+
     //arrayList----------------------------------------------------------
     private val shabdjaalBoradItem: ArrayList<ShabdjaalBoradItem> = ArrayList()
     private val answerListt: ArrayList<AnswerModelShabd> = ArrayList()
 
-    private val splitedList : ArrayList<String> = ArrayList()
+    private val splitedList: ArrayList<String> = ArrayList()
     //private var answerList :ArrayList<AnswerModel> = ArrayList()
 
     //adapter-----------------------------------------------------------
-    private var answerAdapter: AnswerShabdAdapter?=null
+    private var answerAdapter: AnswerShabdAdapter? = null
     private var shabdjaalGameAdapter: ShabdjaalGameAdapter? = null
 
     //navigation Drawer------------------------------------------------
@@ -99,7 +99,7 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
     private var ivHome: ImageView? = null
     private var rlHint: LinearLayout? = null
 
-    private var tvQuestionIn : String?=null
+    private var tvQuestionIn: String? = null
 
     //ad-----------------------------------------------
     private var mInterstitialAd: InterstitialAd? = null
@@ -120,9 +120,9 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
 
     //mediaPlayer-----------------------------------------
     private var mediaPlayer: MediaPlayer? = null
-    private var mediaPlayerError : MediaPlayer? = null
-    private var mediaPlayerCorrectWord : MediaPlayer? = null
-    private var mediaPlayerGameComplete : MediaPlayer? = null
+    private var mediaPlayerError: MediaPlayer? = null
+    private var mediaPlayerCorrectWord: MediaPlayer? = null
+    private var mediaPlayerGameComplete: MediaPlayer? = null
 
     //chronometer for show time
     private var tv_timer_text: Chronometer? = null
@@ -140,31 +140,32 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
     private var minute: String? = ""
     private var second: String? = ""
     private var minutes: Long = 0
-    private var gameUserId :String = ""
+    private var gameUserId: String = ""
     private var seconds: Long = 0
-    private var mGameUsrId:String = ""
-    private var mGameEndTime : String = ""
-    private var mGameStatus:String = ""
-    private var gameDate:String?=null
-    private var puzzleGameDate:String?=null
+    private var mGameUsrId: String = ""
+    private var mGameEndTime: String = ""
+    private var mGameStatus: String = ""
+    private var gameDate: String? = null
+    private var puzzleGameDate: String? = null
 
     var wordsGrid: WordSearchView? = null;
+
     //counter for hint button-----------------
     var hintCount = 0
 
-    private var date :String? = null
+    private var date: String? = null
 
     lateinit var spinner: Spinner
 
     protected var context: Context? = null
-    private var mRewardedAd: RewardedAd? = null
+    private var hintInterstitialAd: InterstitialAd? = null
 
-    private var tvHindi :TextView?=null
-    private var tvEng :TextView?=null
-    private var tvGameDate :TextView?=null
+    private var tvHindi: TextView? = null
+    private var tvEng: TextView? = null
+    private var tvGameDate: TextView? = null
 
-    private var llHindi:LinearLayout?=null
-    private var llEng:LinearLayout?=null
+    private var llHindi: LinearLayout? = null
+    private var llEng: LinearLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -172,17 +173,17 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
         setContentView(R.layout.activity_shabdjaal_play_game_shabd)
 
         //  wordsGrid.setTypeface(FontManager.getTypeface(this, FontManager.POYNTER))
-        mediaPlayerError  = MediaPlayer.create(this,R.raw.for_error_music)
-        mediaPlayerCorrectWord  = MediaPlayer.create(this,R.raw.small_applause)
-        mediaPlayerGameComplete  = MediaPlayer.create(this,R.raw.game_complete)
+        mediaPlayerError = MediaPlayer.create(this, R.raw.for_error_music)
+        mediaPlayerCorrectWord = MediaPlayer.create(this, R.raw.small_applause)
+        mediaPlayerGameComplete = MediaPlayer.create(this, R.raw.game_complete)
 
 
-         puzzleGameDate=intent.getStringExtra("Date")
-       /* if(puzzleGameDate.equals("null")){
-            puzzleGameDate = PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.DATE_FOR_LANGUAGE_CANGE_PART)
-        }*/
-       // Toast.makeText(this, puzzleGameDate, Toast.LENGTH_SHORT).show()
+        puzzleGameDate = intent.getStringExtra("Date")/* if(puzzleGameDate.equals("null")){
+             puzzleGameDate = PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.DATE_FOR_LANGUAGE_CANGE_PART)
+         }*/
+        // Toast.makeText(this, puzzleGameDate, Toast.LENGTH_SHORT).show()
         interstitialAdd()
+        initHintInterstitialAds()
         try {
             initViews()
             navDrawerSetup()
@@ -203,14 +204,15 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
         super.onResume()
 
         if (PrefDataShabdjal.getStringPrefs(this, PrefDataShabdjal.Key.NAME) != null) {
-            ivUserName?.text = PrefDataShabdjal.getStringPrefs(this, PrefDataShabdjal.Key.NAME) }
+            ivUserName?.text = PrefDataShabdjal.getStringPrefs(this, PrefDataShabdjal.Key.NAME)
+        }
 
         if (PrefDataShabdjal.getSoundState(this@ShabdjaalPlayGameActivity)) {
             mediaPlayer?.start()
         } else {
             mediaPlayer?.pause()
         }
-        if(gameDate != null){
+        if (gameDate != null) {
             gameTimer()
         }
     }
@@ -235,11 +237,13 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
     }
 
     override fun onDestroy() {
-        if(gameDate != null && wordsGrid != null && !wordsGrid?.answeredWordList!!.isEmpty()  ){
+        if (gameDate != null && wordsGrid != null && !wordsGrid?.answeredWordList!!.isEmpty()) {
             ShabdjalUtils.saveGame(this, wordsGrid?.answeredWordList!!, gameDate.toString())
-            if(tv_timer_text != null){
+            if (tv_timer_text != null) {
                 pauseOffset = SystemClock.elapsedRealtime() - tv_timer_text!!.base
-                PrefDataShabdjal.setLongPrefs(applicationContext, PrefDataShabdjal.Key.PAUSE_OFF_SET+gameDate, pauseOffset)
+                PrefDataShabdjal.setLongPrefs(
+                    applicationContext, PrefDataShabdjal.Key.PAUSE_OFF_SET + gameDate, pauseOffset
+                )
             }
         }
         tv_timer_text = null
@@ -247,11 +251,13 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
     }
 
     override fun onUserLeaveHint() {
-        if(gameDate != null && wordsGrid != null && !wordsGrid?.answeredWordList!!.isEmpty()  ){
+        if (gameDate != null && wordsGrid != null && !wordsGrid?.answeredWordList!!.isEmpty()) {
             ShabdjalUtils.saveGame(this, wordsGrid?.answeredWordList!!, gameDate.toString())
-            if(tv_timer_text != null){
+            if (tv_timer_text != null) {
                 pauseOffset = SystemClock.elapsedRealtime() - tv_timer_text!!.base
-                PrefDataShabdjal.setLongPrefs(applicationContext, PrefDataShabdjal.Key.PAUSE_OFF_SET+gameDate, pauseOffset)
+                PrefDataShabdjal.setLongPrefs(
+                    applicationContext, PrefDataShabdjal.Key.PAUSE_OFF_SET + gameDate, pauseOffset
+                )
             }
         }
         super.onUserLeaveHint()
@@ -284,7 +290,8 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
 
     private fun initViews() {
 
-        gameUserId = PrefDataShabdjal.getStringPrefs(this, PrefDataShabdjal.Key.GAME_USER_ID).toString()
+        gameUserId =
+            PrefDataShabdjal.getStringPrefs(this, PrefDataShabdjal.Key.GAME_USER_ID).toString()
 
         mediaPlayer = MediaPlayer.create(this, R.raw.peaceful_garden_healing)
 
@@ -305,8 +312,8 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
         ivHome = findViewById(R.id.ivHome)
         ivHome?.setOnClickListener(this)
 
-        ivLanguageChange= findViewById(R.id.ivLanguageChange)
-        tvGameDate= findViewById(R.id.tvGameDate)
+        ivLanguageChange = findViewById(R.id.ivLanguageChange)
+        tvGameDate = findViewById(R.id.tvGameDate)
         ivLanguageChange?.setOnClickListener(this)
 
         wordsGrid = findViewById(R.id.wordsGrid) as WordSearchView
@@ -340,7 +347,7 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
         Handler(Looper.myLooper()!!).postDelayed({
             tvQuestion?.visibility = View.GONE
             tvSubQuestionText?.visibility = View.GONE
-            lLayAnswers?.visibility =View.VISIBLE
+            lLayAnswers?.visibility = View.VISIBLE
         }, 5000)
 
         llEng = findViewById(R.id.llEng)
@@ -348,20 +355,24 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
         tvEng = findViewById(R.id.tvEng)
         tvHindi = findViewById(R.id.tvHindi)
 
-        if(PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE)!=null &&
-            PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE).equals("hindi")){
+        if (PrefDataShabdjal.getStringPrefs(
+                this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE
+            ) != null && PrefDataShabdjal.getStringPrefs(
+                this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE
+            ).equals("hindi")
+        ) {
             llHindi?.setBackgroundColor(Color.parseColor("#4267B2"));
 
-           // llHindi?.setBackgroundColor(Color.BLACK)
+            // llHindi?.setBackgroundColor(Color.BLACK)
             llEng?.setBackgroundColor(Color.WHITE)
 
             tvEng?.setTextColor(Color.parseColor("#000000"));
             tvHindi?.setTextColor(Color.parseColor("#FFFFFF"));
 
-        }else{
+        } else {
             llEng?.setBackgroundColor(Color.parseColor("#4267B2"));
 
-           // llEng?.setBackgroundColor(Color.BLACK)
+            // llEng?.setBackgroundColor(Color.BLACK)
             llHindi?.setBackgroundColor(Color.WHITE)
 
             tvHindi?.setTextColor(Color.parseColor("#000000"));
@@ -371,14 +382,18 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
         llEng?.setOnClickListener {
             CleverTapEventShabdjal(this).createOnlyEvent(CleverTapShabdjalConstants.BUTTON_ENGLISH)
 
-            if(PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE)!=null &&
-                PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE).equals("english")) {
+            if (PrefDataShabdjal.getStringPrefs(
+                    this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE
+                ) != null && PrefDataShabdjal.getStringPrefs(
+                    this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE
+                ).equals("english")
+            ) {
                 llEng?.isClickable = false
-            }else{
+            } else {
 
                 llEng?.setBackgroundColor(Color.parseColor("#4267B2"));
 
-               // llEng?.setBackgroundColor(Color.BLACK)
+                // llEng?.setBackgroundColor(Color.BLACK)
                 llHindi?.setBackgroundColor(Color.WHITE)
 
                 tvHindi?.setTextColor(Color.parseColor("#000000"));
@@ -386,21 +401,32 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
 
 
                 ShabdjalLanguagePreference.getInstance(baseContext).language = ""
-                PrefDataShabdjal.setStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE,PrefDataShabdjal.Key.ENGLISH)
-                PrefDataShabdjal.setStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE,PrefDataShabdjal.Key.ENGLISH)
+                PrefDataShabdjal.setStringPrefs(
+                    this@ShabdjaalPlayGameActivity,
+                    PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE,
+                    PrefDataShabdjal.Key.ENGLISH
+                )
+                PrefDataShabdjal.setStringPrefs(
+                    this@ShabdjaalPlayGameActivity,
+                    PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE,
+                    PrefDataShabdjal.Key.ENGLISH
+                )
 
-                if(!TextUtils.isEmpty(PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.GAME_USER_ID))){
+                if (!TextUtils.isEmpty(
+                        PrefDataShabdjal.getStringPrefs(
+                            this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.GAME_USER_ID
+                        )
+                    )
+                ) {
                     val intent = Intent(this, EnglishShabdjaalPlayGameActivity::class.java)
                     intent.putExtra("Date", puzzleGameDate)
-                    intent.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
                     finish()
-                }else{
+                } else {
                     val intent = Intent(this, EnglishShabdjaalPlayGameActivity::class.java)
                     intent.putExtra("Date", puzzleGameDate)
-                    intent.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
                     finish()
                 }
@@ -412,14 +438,18 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
         llHindi?.setOnClickListener {
             CleverTapEventShabdjal(this).createOnlyEvent(CleverTapShabdjalConstants.BUTTON_HINDI)
 
-            if(PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE)!=null &&
-                PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE).equals("hindi")) {
+            if (PrefDataShabdjal.getStringPrefs(
+                    this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE
+                ) != null && PrefDataShabdjal.getStringPrefs(
+                    this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE
+                ).equals("hindi")
+            ) {
                 llHindi?.isClickable = false
-            }else{
+            } else {
 
                 llHindi?.setBackgroundColor(Color.parseColor("#4267B2"));
 
-              //  llHindi?.setBackgroundColor(Color.BLACK)
+                //  llHindi?.setBackgroundColor(Color.BLACK)
                 llEng?.setBackgroundColor(Color.WHITE)
 
                 tvEng?.setTextColor(Color.parseColor("#000000"));
@@ -427,22 +457,33 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
 
 
                 ShabdjalLanguagePreference.getInstance(baseContext).language = "hi"
-                PrefDataShabdjal.setStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE,PrefDataShabdjal.Key.HINDI)
-                PrefDataShabdjal.setStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE,PrefDataShabdjal.Key.HINDI)
+                PrefDataShabdjal.setStringPrefs(
+                    this@ShabdjaalPlayGameActivity,
+                    PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE,
+                    PrefDataShabdjal.Key.HINDI
+                )
+                PrefDataShabdjal.setStringPrefs(
+                    this@ShabdjaalPlayGameActivity,
+                    PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE,
+                    PrefDataShabdjal.Key.HINDI
+                )
 
 
-                if(!TextUtils.isEmpty(PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.GAME_USER_ID))){
+                if (!TextUtils.isEmpty(
+                        PrefDataShabdjal.getStringPrefs(
+                            this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.GAME_USER_ID
+                        )
+                    )
+                ) {
                     val intent = Intent(this, ShabdjaalPlayGameActivity::class.java)
                     intent.putExtra("Date", puzzleGameDate)
-                    intent.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
                     finish()
-                }else{
+                } else {
                     val intent = Intent(this, ShabdjaalPlayGameActivity::class.java)
                     intent.putExtra("Date", puzzleGameDate)
-                    intent.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
                     finish()
                 }
@@ -451,24 +492,25 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
         }
 
         var adView = AdView(this@ShabdjaalPlayGameActivity)
-        adView.adUnitId = PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_BANNER_AD_ID)!!
+        adView.adUnitId = PrefDataShabdjal.getStringPrefs(
+            this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_BANNER_AD_ID
+        )!!
         adView.setAdSize(AdSize.BANNER)
         val adRequestt = AdRequest.Builder().build()
         findViewById<LinearLayout?>(R.id.lLAyBannerAd).addView(adView)
         adView.loadAd(adRequestt)
 
 
-       /* mAdView = findViewById(R.id.adView)
-        val adRequestt = AdRequest.Builder().build()
-        mAdView.setAdSize(AdSize.BANNER)
-        mAdView.adUnitId = PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_BANNER_AD_ID)!!
-        mAdView.loadAd(adRequestt)*/
+        /* mAdView = findViewById(R.id.adView)
+         val adRequestt = AdRequest.Builder().build()
+         mAdView.setAdSize(AdSize.BANNER)
+         mAdView.adUnitId = PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_BANNER_AD_ID)!!
+         mAdView.loadAd(adRequestt)*/
     }
 
     private fun forHintBottomSheet() {
         val bottomSheetDialog = BottomSheetDialog(
-            this,
-            R.style.AppBottomSheetDialogTheme
+            this, R.style.AppBottomSheetDialogTheme
         )
 
         val view = this.layoutInflater.inflate(R.layout.hint_bottom_sheet, null)
@@ -479,34 +521,36 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
 
         Log.d("count", hintCount.toString());
         lLayRevealLetter?.setOnClickListener {
-            if(wordsGrid != null){
-                 CleverTapEventShabdjal(this).createOnlyEvent(
-                     CleverTapShabdjalConstants.HINT_BUTTON)
+            if (wordsGrid != null) {
+                CleverTapEventShabdjal(this).createOnlyEvent(
+                    CleverTapShabdjalConstants.HINT_BUTTON
+                )
 
-                 isHintPressed = true
-                 hintCount ++
-                 if(hintCount == 4){
-                     loadAdd()
-                     hintCount = 0
-                 }else{
-                     wordsGrid?.setHint()
-                 }
+                isHintPressed = true
+                hintCount++
+                if (hintCount == 4) {
+                    loadAdd()
+                    hintCount = 0
+                } else {
+                    wordsGrid?.setHint()
+                }
             }
             bottomSheetDialog.dismiss()
         }
 
-        lLayRevealWord?.setOnClickListener{
+        lLayRevealWord?.setOnClickListener {
             CleverTapEventShabdjal(this).createOnlyEvent(
-                CleverTapShabdjalConstants.REVEAL_LETTER)
+                CleverTapShabdjalConstants.REVEAL_LETTER
+            )
 
-           /* if(wordsGrid != null){
-            wordsGrid?.revelWord()
-            }*/
+            /* if(wordsGrid != null){
+             wordsGrid?.revelWord()
+             }*/
 
             isHintPressed = true
 
-            if(wordsGrid != null){
-                showRewardAdd()
+            if (wordsGrid != null) {
+                showHintInterstitialAd()
             }
             bottomSheetDialog.dismiss()
         }
@@ -515,43 +559,38 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
         bottomSheetDialog.show()
     }
 
-    private fun initRewardAdd() {
+    private fun initHintInterstitialAds() {
         val adRequest = AdRequest.Builder().build()
-        RewardedAd.load(this, PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_REWARDED_AD_ID)!!,
-            adRequest, object : RewardedAdLoadCallback() {
-                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    // Handle the error.
-                    // Log.d(TAG, loadAdError.getMessage());
-                    mRewardedAd = null
-                }
 
-                override fun onAdLoaded(rewardedAd: RewardedAd) {
-                    mRewardedAd = rewardedAd
-                    // Log.d(TAG, "Ad was loaded.");
-                }
-            })
+        var adId = PrefDataShabdjal.getStringPrefs(
+            this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_INTERTITIAL_ID
+        )!!
+        var callback = object : InterstitialAdLoadCallback() {
+            override fun onAdFailedToLoad(p0: LoadAdError) {
+
+                hintInterstitialAd = null;
+                super.onAdFailedToLoad(p0)
+            }
+
+            override fun onAdLoaded(p0: InterstitialAd) {
+                hintInterstitialAd = p0;
+                super.onAdLoaded(p0)
+            }
+        }
+
+        InterstitialAd.load(this, adId, adRequest, callback)
+
     }
 
-    private fun showRewardAdd() {
-        if (mRewardedAd != null) {
-            mRewardedAd?.show(this, OnUserEarnedRewardListener { rewardItem -> // Handle the reward.
-                //  Log.d(TAG, "The user earned the reward.");
-                val rewardAmount = rewardItem.amount
-                val rewardType = rewardItem.type
-                // setHint()
-                initRewardAdd()
-                wordsGrid?.revelWord()
-            })
-            mRewardedAd?.setFullScreenContentCallback(object : FullScreenContentCallback() {
-                override fun onAdShowedFullScreenContent() {
-                    // Called when ad is shown.
-                    // Log.d(TAG, "Ad was shown.");
-                }
+    private fun showHintInterstitialAd(callback: (() -> Unit)? = null) {
+        if (hintInterstitialAd != null) {
+            hintInterstitialAd?.show(this)
+            hintInterstitialAd?.setFullScreenContentCallback(object : FullScreenContentCallback() {
 
                 override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                     // Called when ad fails to show.
                     // Log.d(TAG, "Ad failed to show.");
-                    initRewardAdd()
+                    initHintInterstitialAds()
 
                 }
 
@@ -559,262 +598,281 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
                     // Called when ad is dismissed.
                     // Set the ad reference to null so you don't show the ad a second time.
                     // Log.d(TAG, "Ad was dismissed.");
-                    mRewardedAd = null
-                    initRewardAdd()
+                    wordsGrid?.revelWord()
+                    hintInterstitialAd = null
+
+                    if (callback == null) {
+                        initHintInterstitialAds()
+                    } else {
+                        callback()
+                    }
+
                 }
             })
         } else {
             // Log.d(TAG, "The rewarded ad wasn't ready yet.");
-            Toast.makeText(this,"The rewarded ad wasn't ready yet.", Toast.LENGTH_LONG).show()
-            initRewardAdd()
+            Toast.makeText(this, "The rewarded ad wasn't ready yet.", Toast.LENGTH_LONG).show()
+            initHintInterstitialAds()
         }
     }
 
     private fun getShabdjaalGame() {
-       // https://mocki.io/v1/abe31b40-38e7-402b-bc91-99a2e94aefa7
+        // https://mocki.io/v1/abe31b40-38e7-402b-bc91-99a2e94aefa7
 
         val shabdjaalRequest = ShabdjaalGameRequest()
         // shabdjaalRequest.appId = "1"
-        shabdjaalRequest.game_user_id = PrefDataShabdjal.getStringPrefs(this, PrefDataShabdjal.Key.GAME_USER_ID).toString()
+        shabdjaalRequest.game_user_id =
+            PrefDataShabdjal.getStringPrefs(this, PrefDataShabdjal.Key.GAME_USER_ID).toString()
 
-        shabdjaalRequest.game_date= puzzleGameDate
-        shabdjaalRequest.lang_id ="1"
-        shabdjaalRequest.app_id = PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_APP_ID)
+        shabdjaalRequest.game_date = puzzleGameDate
+        shabdjaalRequest.lang_id = "1"
+        shabdjaalRequest.app_id = PrefDataShabdjal.getStringPrefs(
+            this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_APP_ID
+        )
 
         Log.e("params:", shabdjaalRequest.toString())
 
-        compositeDisposable.add(
-            apiService!!.getShabdjaalGame(shabdjaalRequest)
-                ?.subscribeOn(Schedulers.io())
-                ?.observeOn(AndroidSchedulers.mainThread())
-            !!.subscribe(fun(response: ShabdjaalGameResponse?) {
-                    try {
-                        Log.e("game_response:", response.toString())
-                        if (response?.status == "true" && response.data != null) {
-                            puzzleGameDate = response.data.gameDate
-                            if(TextUtils.isEmpty(PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_APP_ID))){
-                                try{
-                                    val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-                                    val formatter = SimpleDateFormat("dd-MM-yyyy")
-                                    val dateFormated = formatter.format(parser.parse(puzzleGameDate))
-                                    tvGameDate?.text = dateFormated
-                                }catch (e:Exception){
-                                }
-                            }
-
-
-
-                           /* if(puzzleGameDate.equals("null") || TextUtils.isEmpty(puzzleGameDate) ) {
-                                puzzleGameDate = response.data.gameDate
-
-                                var dateFormated = ""
-                                val parser = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        compositeDisposable.add(apiService!!.getShabdjaalGame(shabdjaalRequest)
+            ?.subscribeOn(Schedulers.io())?.observeOn(AndroidSchedulers.mainThread())!!
+            .subscribe(fun(response: ShabdjaalGameResponse?) {
+                try {
+                    Log.e("game_response:", response.toString())
+                    if (response?.status == "true" && response.data != null) {
+                        puzzleGameDate = response.data.gameDate
+                        if (TextUtils.isEmpty(
+                                PrefDataShabdjal.getStringPrefs(
+                                    this@ShabdjaalPlayGameActivity,
+                                    PrefDataShabdjal.Key.SHABDJAAL_APP_ID
+                                )
+                            )
+                        ) {
+                            try {
+                                val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
                                 val formatter = SimpleDateFormat("dd-MM-yyyy")
-                                try {
-                                    dateFormated = formatter.format(parser.parse(puzzleGameDate))
-                                } catch (e: ParseException) {
-
-                                }
+                                val dateFormated = formatter.format(parser.parse(puzzleGameDate))
                                 tvGameDate?.text = dateFormated
-                            }*/
-
-                            Log.e("leaderBoardStatus::", response.data.today_leaderboard_status.toString())
-
-                            if(response.data.today_leaderboard_status){
-                                CommonUtilsShabdjal.performIntentFinish(this, WaitingShabdActivity::class.java)
-                                return
+                            } catch (e: Exception) {
                             }
+                        }
 
-                            tvQuestionIn = response.data.question.toString()
-                            tvQuestion?.text = tvQuestionIn.toString()
-                            Log.e("question:", response.data.question.toString())
-                            gameDate = response.data.gameDate
 
-                            shabdjaalBoradItem.addAll(response.data.shabdjaalBorad!!)
+                        /* if(puzzleGameDate.equals("null") || TextUtils.isEmpty(puzzleGameDate) ) {
+                             puzzleGameDate = response.data.gameDate
 
-                            wordsGrid?.setLetters(shabdjaalBoradItem)
-                            //   wordsGrid?.setWords(response.data.shabdjaalPlay.word.t)
-                            wordsGrid?.setWordsList(response.data.shabdjaalPlay?.word)
-                            tvTotalQuestion?.text = response.data.shabdjaalPlay?.word?.size.toString()
-                            Log.e("word_", response.data.shabdjaalPlay?.word.toString())
-                            //start timer after showing response
-                            pauseOffset = PrefDataShabdjal.getLongPrefs(applicationContext, PrefDataShabdjal.Key.PAUSE_OFF_SET+gameDate, 0)
-                            startTimer()
+                             var dateFormated = ""
+                             val parser = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                             val formatter = SimpleDateFormat("dd-MM-yyyy")
+                             try {
+                                 dateFormated = formatter.format(parser.parse(puzzleGameDate))
+                             } catch (e: ParseException) {
 
-                            if(response.data.shabdjaalPlay?.split!!.isNotEmpty()){
-                                for(i in 0 until response.data.shabdjaalPlay?.split!!.size){
-                                    splitedList.add(response.data.shabdjaalPlay.split[i]!!)
-                                    wordsGrid?.setSplitetdList(splitedList)
-                                    Log.e("splited_list",splitedList.toString())
-                                }
+                             }
+                             tvGameDate?.text = dateFormated
+                         }*/
+
+                        Log.e(
+                            "leaderBoardStatus::",
+                            response.data.today_leaderboard_status.toString()
+                        )
+
+                        if (response.data.today_leaderboard_status) {
+                            CommonUtilsShabdjal.performIntentFinish(
+                                this, WaitingShabdActivity::class.java
+                            )
+                            return
+                        }
+
+                        tvQuestionIn = response.data.question.toString()
+                        tvQuestion?.text = tvQuestionIn.toString()
+                        Log.e("question:", response.data.question.toString())
+                        gameDate = response.data.gameDate
+
+                        shabdjaalBoradItem.addAll(response.data.shabdjaalBorad!!)
+
+                        wordsGrid?.setLetters(shabdjaalBoradItem)
+                        //   wordsGrid?.setWords(response.data.shabdjaalPlay.word.t)
+                        wordsGrid?.setWordsList(response.data.shabdjaalPlay?.word)
+                        tvTotalQuestion?.text = response.data.shabdjaalPlay?.word?.size.toString()
+                        Log.e("word_", response.data.shabdjaalPlay?.word.toString())
+                        //start timer after showing response
+                        pauseOffset = PrefDataShabdjal.getLongPrefs(
+                            applicationContext, PrefDataShabdjal.Key.PAUSE_OFF_SET + gameDate, 0
+                        )
+                        startTimer()
+
+                        if (response.data.shabdjaalPlay?.split!!.isNotEmpty()) {
+                            for (i in 0 until response.data.shabdjaalPlay?.split!!.size) {
+                                splitedList.add(response.data.shabdjaalPlay.split[i]!!)
+                                wordsGrid?.setSplitetdList(splitedList)
+                                Log.e("splited_list", splitedList.toString())
                             }
+                        }
 
-                            ////  startTimer()
-                            wordsGrid?.setOnWordSearchedListener(object :
-                                WordSearchView.OnWordSearchedListener {
-                                @SuppressLint("NotifyDataSetChanged")
-                                override fun wordFound(word: String) {
-                                    /* Toast.makeText(
+                        ////  startTimer()
+                        wordsGrid?.setOnWordSearchedListener(object :
+                            WordSearchView.OnWordSearchedListener {
+                            @SuppressLint("NotifyDataSetChanged")
+                            override fun wordFound(word: String) {/* Toast.makeText(
                                          this@ShabdjaalPlayGameActivity,
                                          word + " found",
                                          Toast.LENGTH_SHORT
                                      )
                                          .show()*/
 
-                                    if(isHintPressed){
-                                        isHintPressed = false
-                                    }else{
-                                        if(PrefDataShabdjal.getSoundState(this@ShabdjaalPlayGameActivity)){
-                                            mediaPlayerCorrectWord?.start()
-                                        }else{
-                                            mediaPlayerCorrectWord?.pause()
-                                        }
-                                    }
-
-                                    for (answerModel in answerListt) {
-                                        if (word.equals(answerModel.answer)) {
-                                            Log.e("selected_answer", answerModel.toString())
-                                            answerModel.isAnswered = true
-                                            break
-                                        }
-                                    }
-
-                                    answerAdapter?.notifyDataSetChanged()
-
-                                    var answerCount = 0
-                                    for (i in 0 until answerListt.size) {
-
-                                        if (answerListt[i].isAnswered) {
-                                            answerCount++
-                                            Log.e("isAns", "")
-                                        }
-                                    }
-                                    tvAnswerCount?.text = answerCount.toString()
-
-                                }
-
-                                override fun onAllWordFound() {
-
-                                    Handler(Looper.myLooper()!!).postDelayed(Runnable {
-                                        //  response.data.today_leaderboard_status = true
-                                        showWinGif()
-                                    }, 1000)
-
-                                    /*    Toast.makeText(
-                                            this@ShabdjaalPlayGameActivity,
-                                            " All Word " + " found",
-                                            Toast.LENGTH_SHORT
-                                        )
-                                            .show()*/
-                                    PrefDataShabdjal.setStringPrefs(this@ShabdjaalPlayGameActivity,gameDate.toString()+PrefDataShabdjal.Key.IS_DONE, "Done");
-                                    pauseOffset = SystemClock.elapsedRealtime() - tv_timer_text!!.base
-
-
-                                    Handler(Looper.myLooper()!!).postDelayed(Runnable {
-
-                                        //  response.data.today_leaderboard_status = true
-
-                                        endGame(
-                                            gameUserId,
-                                            (pauseOffset / 1000).toString(),
-                                            ConstantsShabdjal.WIN
-                                        )
-                                    }, 2000)
-                                }
-
-                                override fun wordNotFound() {
+                                if (isHintPressed) {
+                                    isHintPressed = false
+                                } else {
                                     if (PrefDataShabdjal.getSoundState(this@ShabdjaalPlayGameActivity)) {
-                                        mediaPlayerError?.start()
+                                        mediaPlayerCorrectWord?.start()
                                     } else {
-                                        mediaPlayerError?.pause()
+                                        mediaPlayerCorrectWord?.pause()
                                     }
                                 }
-                            })
 
-                            shabdjaalGameAdapter = ShabdjaalGameAdapter(this, shabdjaalBoradItem)
-                            shabdjaalGameAdapter?.notifyDataSetChanged()
+                                for (answerModel in answerListt) {
+                                    if (word.equals(answerModel.answer)) {
+                                        Log.e("selected_answer", answerModel.toString())
+                                        answerModel.isAnswered = true
+                                        break
+                                    }
+                                }
 
-                            //answerListt.clear()
+                                answerAdapter?.notifyDataSetChanged()
 
-                            for (i in 0 until response.data.shabdjaalPlay?.word!!.size) {
-                                answerListt.add(
-                                    AnswerModelShabd(
-                                        response.data.shabdjaalPlay.word[i].toString(),
-                                        false
+                                var answerCount = 0
+                                for (i in 0 until answerListt.size) {
+
+                                    if (answerListt[i].isAnswered) {
+                                        answerCount++
+                                        Log.e("isAns", "")
+                                    }
+                                }
+                                tvAnswerCount?.text = answerCount.toString()
+
+                            }
+
+                            override fun onAllWordFound() {
+
+                                Handler(Looper.myLooper()!!).postDelayed(Runnable {
+                                    //  response.data.today_leaderboard_status = true
+                                    showWinGif()
+                                }, 1000)
+
+                                /*    Toast.makeText(
+                                        this@ShabdjaalPlayGameActivity,
+                                        " All Word " + " found",
+                                        Toast.LENGTH_SHORT
                                     )
-                                )
-                                Log.e("answerList:", answerListt.toString())
+                                        .show()*/
+                                PrefDataShabdjal.setStringPrefs(
+                                    this@ShabdjaalPlayGameActivity,
+                                    gameDate.toString() + PrefDataShabdjal.Key.IS_DONE,
+                                    "Done"
+                                );
+                                pauseOffset = SystemClock.elapsedRealtime() - tv_timer_text!!.base
+
+
+                                Handler(Looper.myLooper()!!).postDelayed(Runnable {
+
+                                    //  response.data.today_leaderboard_status = true
+
+                                    endGame(
+                                        gameUserId,
+                                        (pauseOffset / 1000).toString(),
+                                        ConstantsShabdjal.WIN
+                                    )
+                                }, 2000)
                             }
 
-                            answerAdapter = AnswerShabdAdapter(this, answerListt)
-                            val layoutManager = GridLayoutManager(this, 4)
-                            Log.d("betmm", answerListt.size.toString())
-                            rvAnswers?.layoutManager = layoutManager
-                            rvAnswers?.adapter = answerAdapter
-
-                            if (PrefDataShabdjal.getStringPrefs(
-                                    applicationContext,
-                                    gameDate.toString()
-                                ) != null
-                            ) {
-                                var dataSet = ShabdjalUtils.getGame(
-                                    PrefDataShabdjal.getStringPrefs(
-                                        this,
-                                        gameDate.toString()
-                                    ).toString()
-                                )
-                                wordsGrid?.setAnsweredList(
-                                    dataSet
-                                )
-
-                                if(dataSet != null && !dataSet.isEmpty()){
-                                    val it: Iterator<Word> = dataSet.iterator()
-                                    while (it.hasNext()){
-                                        var answer  = it.next().word
-                                        for (i in 0 until answerListt.size){
-                                            if( answer == answerListt[i].answer){
-                                                answerListt[i].isAnswered = true
-                                            }
-                                        }
-                                    }
-
-                                    var answerCount = 0
-                                    for (i in 0 until answerListt.size) {
-
-                                        if (answerListt[i].isAnswered) {
-                                            answerCount++
-                                            Log.e("isAns", "")
-                                        }
-                                    }
-                                    tvAnswerCount?.text = answerCount.toString()
+                            override fun wordNotFound() {
+                                if (PrefDataShabdjal.getSoundState(this@ShabdjaalPlayGameActivity)) {
+                                    mediaPlayerError?.start()
+                                } else {
+                                    mediaPlayerError?.pause()
                                 }
                             }
-                            answerAdapter?.notifyDataSetChanged()
+                        })
 
-                            if(wordsGrid != null && wordsGrid!!.isAllDone){
-                                endGame(
-                                    gameUserId,
-                                    (pauseOffset / 1000).toString(),
-                                    ConstantsShabdjal.WIN
+                        shabdjaalGameAdapter = ShabdjaalGameAdapter(this, shabdjaalBoradItem)
+                        shabdjaalGameAdapter?.notifyDataSetChanged()
+
+                        //answerListt.clear()
+
+                        for (i in 0 until response.data.shabdjaalPlay?.word!!.size) {
+                            answerListt.add(
+                                AnswerModelShabd(
+                                    response.data.shabdjaalPlay.word[i].toString(), false
                                 )
+                            )
+                            Log.e("answerList:", answerListt.toString())
+                        }
+
+                        answerAdapter = AnswerShabdAdapter(this, answerListt)
+                        val layoutManager = GridLayoutManager(this, 4)
+                        Log.d("betmm", answerListt.size.toString())
+                        rvAnswers?.layoutManager = layoutManager
+                        rvAnswers?.adapter = answerAdapter
+
+                        if (PrefDataShabdjal.getStringPrefs(
+                                applicationContext, gameDate.toString()
+                            ) != null
+                        ) {
+                            var dataSet = ShabdjalUtils.getGame(
+                                PrefDataShabdjal.getStringPrefs(
+                                    this, gameDate.toString()
+                                ).toString()
+                            )
+                            wordsGrid?.setAnsweredList(
+                                dataSet
+                            )
+
+                            if (dataSet != null && !dataSet.isEmpty()) {
+                                val it: Iterator<Word> = dataSet.iterator()
+                                while (it.hasNext()) {
+                                    var answer = it.next().word
+                                    for (i in 0 until answerListt.size) {
+                                        if (answer == answerListt[i].answer) {
+                                            answerListt[i].isAnswered = true
+                                        }
+                                    }
+                                }
+
+                                var answerCount = 0
+                                for (i in 0 until answerListt.size) {
+
+                                    if (answerListt[i].isAnswered) {
+                                        answerCount++
+                                        Log.e("isAns", "")
+                                    }
+                                }
+                                tvAnswerCount?.text = answerCount.toString()
                             }
                         }
-                        else if(response?.status == "false"){
-                            //noShabdjaalPuzzleFound()
+                        answerAdapter?.notifyDataSetChanged()
 
-                                val intent = Intent(this, PastPuzzleActivityShabdjaal::class.java)
-                                intent.flags =
-                                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                                startActivity(intent)
-                                finish()
-
+                        if (wordsGrid != null && wordsGrid!!.isAllDone) {
+                            endGame(
+                                gameUserId,
+                                (pauseOffset / 1000).toString(),
+                                ConstantsShabdjal.WIN
+                            )
                         }
-                    }catch (e:Exception){
+                    } else if (response?.status == "false") {
+                        //noShabdjaalPuzzleFound()
+
+                        val intent = Intent(this, PastPuzzleActivityShabdjaal::class.java)
+                        intent.flags =
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        startActivity(intent)
+                        finish()
 
                     }
-                }) { throwable ->
-                    Log.d("Error", "" + throwable)
-                })
+                } catch (e: Exception) {
+
+                }
+            }) { throwable ->
+                Log.d("Error", "" + throwable)
+            })
     }
 
     private fun goToLeaderBoardScreen() {
@@ -833,31 +891,32 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
         //nav_drawer_list.add(NavDrawerShabdjalModel("Terms & uses"))
         //nav_drawer_list.add(NavDrawerShabdjalModel("LogOut"))
 
-        rvNavDrawer?.adapter = NavDrawerShabdjalAdapter(this, nav_drawer_list, object :
-            RecyclerViewOnClickShabdjal {
-            override fun onItemClicked(position: Int, viewType: Int, view: View) {
-                when (viewType) {
-                    11 -> {
-                        my_drawer_layout.closeDrawer(navView)
+        rvNavDrawer?.adapter =
+            NavDrawerShabdjalAdapter(this, nav_drawer_list, object : RecyclerViewOnClickShabdjal {
+                override fun onItemClicked(position: Int, viewType: Int, view: View) {
+                    when (viewType) {
+                        11 -> {
+                            my_drawer_layout.closeDrawer(navView)
+                        }
                     }
                 }
-            }
-        })
+            })
     }
 
 
     override fun onClick(v: View?) {
         when (v?.id) {
-            R.id.rl_hint ->{
+            R.id.rl_hint -> {
 
                 forHintBottomSheet()
-                Log.e("hint-press","hint-press")
+                Log.e("hint-press", "hint-press")
             }
 
-            R.id.ivHome ->{
+            R.id.ivHome -> {
 
                 CleverTapEventShabdjal(this).createOnlyEvent(
-                    CleverTapShabdjalConstants.HOME_CLICK)
+                    CleverTapShabdjalConstants.HOME_CLICK
+                )
 
                 val activityToStart =
                     "com.tvtoday.gamelibrary.core.views.activity.homePage.HomeActivity"
@@ -867,26 +926,28 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     startActivity(intent)
                 } catch (ignored: ClassNotFoundException) {
-                }
-                /*setResult(22);
+                }/*setResult(22);
                 finish()*/
             }
 
             R.id.ivHamburger -> {
                 CleverTapEventShabdjal(this).createOnlyEvent(
-                    CleverTapShabdjalConstants.HAMBUGER_MENU)
+                    CleverTapShabdjalConstants.HAMBUGER_MENU
+                )
 
                 my_drawer_layout.openDrawer(navView)
-                Log.e("hint-press","hint-press")
+                Log.e("hint-press", "hint-press")
 
             }
 
             R.id.ivLeaderBoard -> {
                 val bundle = Bundle()
-                bundle.putString(IntentConstantsShabdjal.GAME_USER_ID_,gameUserId)
+                bundle.putString(IntentConstantsShabdjal.GAME_USER_ID_, gameUserId)
                 bundle.putString("GAME_DATE_FOR_LEADER_BOARD", puzzleGameDate)
 
-                CommonUtilsShabdjal.performIntentWithBundle(this, LeaderBoardShabdjalActivity::class.java, bundle)
+                CommonUtilsShabdjal.performIntentWithBundle(
+                    this, LeaderBoardShabdjalActivity::class.java, bundle
+                )
             }
 
             R.id.ivSettingGame -> {
@@ -913,58 +974,67 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
                 dialog.window?.attributes = lp
                 dialog.show()
             }
+
             R.id.lLayInfoQuestion -> {
                 showQuestion()
             }
-            R.id.ivLanguageChange ->{
-              //  openLanguageBottomSheet()
+
+            R.id.ivLanguageChange -> {
+                //  openLanguageBottomSheet()
             }
         }
     }
 
 
-    private fun getTimeTillMidnight():Long{
+    private fun getTimeTillMidnight(): Long {
         val c: Calendar = Calendar.getInstance()
         c.set(Calendar.HOUR_OF_DAY, 0)
         c.set(Calendar.MINUTE, 0)
         c.set(Calendar.SECOND, 0)
         c.set(Calendar.MILLISECOND, 0)
-        c.add(Calendar.DATE,1)
+        c.add(Calendar.DATE, 1)
         val howMany: Long = c.getTimeInMillis() - System.currentTimeMillis()
         return howMany
     }
 
 
     private fun submitGame(submitGameRequest: SubmitGameReuquestShabd) {
-        compositeDisposable.add(
-            apiService!!.gameSubmitShabdjaal(submitGameRequest)
-                ?.subscribeOn(Schedulers.io())
-                ?.observeOn(AndroidSchedulers.mainThread())
-            !!.subscribe({ response ->
-                    Log.e("submitGameResponse:", response.toString())
-                    if (response?.status == "true") {
+        compositeDisposable.add(apiService!!.gameSubmitShabdjaal(submitGameRequest)
+            ?.subscribeOn(Schedulers.io())?.observeOn(AndroidSchedulers.mainThread())!!
+            .subscribe({ response ->
+                Log.e("submitGameResponse:", response.toString())
+                if (response?.status == "true") {
 
-                        date = response.data?.game_date
-                        Log.e("date:", date.toString())
+                    date = response.data?.game_date
+                    Log.e("date:", date.toString())
 
-                        val bundle = Bundle()
-                        bundle.putString(IntentConstantsShabdjal.GAME_USER_ID_,gameUserId)
-                        bundle.putString("GAME_DATE_FOR_LEADER_BOARD", puzzleGameDate)
+                    val bundle = Bundle()
+                    bundle.putString(IntentConstantsShabdjal.GAME_USER_ID_, gameUserId)
+                    bundle.putString("GAME_DATE_FOR_LEADER_BOARD", puzzleGameDate)
 
-                        PrefDataShabdjal.setBooleanPrefs(this, PrefDataShabdjal.Key.FOR_HURREY_SCREEN, true)
+                    PrefDataShabdjal.setBooleanPrefs(
+                        this, PrefDataShabdjal.Key.FOR_HURREY_SCREEN, true
+                    )
 
-                        CommonUtilsShabdjal.performIntentWithBundle(this, LeaderBoardShabdjalActivity::class.java, bundle)
-                        finish()
-                    }
-                }) { throwable ->
+                    CommonUtilsShabdjal.performIntentWithBundle(
+                        this, LeaderBoardShabdjalActivity::class.java, bundle
+                    )
+                    finish()
+                }
+            }) { throwable ->
 
-                    Log.d("Error", "" + throwable.message)
-                })
+                Log.d("Error", "" + throwable.message)
+            })
     }
 
-    private fun endGame(gameUserId: String, gameEndTime:String, gameStatus: String) {
-        if(PrefDataShabdjal.getStringPrefs(applicationContext, PrefDataShabdjal.Key.GAME_USER_ID) != null){
-            mGameUsrId = PrefDataShabdjal.getStringPrefs(applicationContext, PrefDataShabdjal.Key.GAME_USER_ID).toString()
+    private fun endGame(gameUserId: String, gameEndTime: String, gameStatus: String) {
+        if (PrefDataShabdjal.getStringPrefs(
+                applicationContext, PrefDataShabdjal.Key.GAME_USER_ID
+            ) != null
+        ) {
+            mGameUsrId = PrefDataShabdjal.getStringPrefs(
+                applicationContext, PrefDataShabdjal.Key.GAME_USER_ID
+            ).toString()
             mGameEndTime = gameEndTime
             mGameStatus = gameStatus
 
@@ -973,16 +1043,25 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
             submitGameRequest.gameUserId = mGameUsrId.toString()
             submitGameRequest.time = mGameEndTime
             submitGameRequest.game_date = puzzleGameDate.toString()
-            submitGameRequest.app_id = PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_APP_ID)
-            Log.e("submit_param",submitGameRequest.toString())
-            submitGame(submitGameRequest)
-        }else{
+            submitGameRequest.app_id = PrefDataShabdjal.getStringPrefs(
+                this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_APP_ID
+            )
+            Log.e("submit_param", submitGameRequest.toString())
+
+            showHintInterstitialAd { submitGame(submitGameRequest) }
+        } else {
             val bundle = Bundle()
-            bundle.putString(IntentConstantsShabdjal.GAME_TIME,gameEndTime)
+            bundle.putString(IntentConstantsShabdjal.GAME_TIME, gameEndTime)
             bundle.putString(IntentConstantsShabdjal.GAME_STATUS, ConstantsShabdjal.WIN)
             bundle.putString("GAME_DATE_FOR_LEADER_BOARD", puzzleGameDate)
-            CommonUtilsShabdjal.performIntentWithBundle(this, LeaderBoardShabdjalActivity::class.java, bundle)
-            finish()
+
+            showHintInterstitialAd {
+                CommonUtilsShabdjal.performIntentWithBundle(
+                    this, LeaderBoardShabdjalActivity::class.java, bundle
+                )
+                finish()
+            }
+
         }
     }
 
@@ -1009,7 +1088,7 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
 
 
     private fun showQuestion() {
-        val dialog =  Dialog(this)
+        val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setContentView(R.layout.question_info_shabd_layout)
 
@@ -1054,37 +1133,36 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
 
     private fun interstitialAdd() {
         val adRequest = AdRequest.Builder().build()
-        InterstitialAd.load(this, PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_INTERTITIAL_ID)!!, adRequest,
-            object : InterstitialAdLoadCallback() {
-                override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                    // The mInterstitialAd reference will be null until
-                    // an ad is loaded.
-                    mInterstitialAd = interstitialAd
-                    //Log.i(TAG, "onAdLoaded");
-                    // loadAdd();
-                }
+        InterstitialAd.load(this, PrefDataShabdjal.getStringPrefs(
+            this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_INTERTITIAL_ID
+        )!!, adRequest, object : InterstitialAdLoadCallback() {
+            override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                // The mInterstitialAd reference will be null until
+                // an ad is loaded.
+                mInterstitialAd = interstitialAd
+                //Log.i(TAG, "onAdLoaded");
+                // loadAdd();
+            }
 
-                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    // Handle the error
-                    //Log.i(TAG, loadAdError.getMessage());
-                    mInterstitialAd = null
-                }
-            })
+            override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                // Handle the error
+                //Log.i(TAG, loadAdError.getMessage());
+                mInterstitialAd = null
+            }
+        })
     }
 
 
-    fun showWinGif(){
-        if (PrefDataShabdjal.getSoundState(this@ShabdjaalPlayGameActivity)){
+    fun showWinGif() {
+        if (PrefDataShabdjal.getSoundState(this@ShabdjaalPlayGameActivity)) {
             mediaPlayerGameComplete?.start()
-        }else{
+        } else {
             mediaPlayerGameComplete?.pause()
         }
 
         findViewById<FrameLayout>(R.id.fl_gif).visibility = View.VISIBLE
 
-        Glide.with(this)
-            .asGif()
-            .load(R.drawable.giphy)
+        Glide.with(this).asGif().load(R.drawable.giphy)
             .listener(object : RequestListener<GifDrawable> {
                 override fun onLoadFailed(
                     e: GlideException?,
@@ -1105,17 +1183,18 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
                     resource.setLoopCount(4)
                     return false
                 }
-            })
-            .into(findViewById(R.id.gif_icon))
+            }).into(findViewById(R.id.gif_icon))
     }
 
     override fun onBackPressed() {
-        if(gameDate != null && wordsGrid != null && !wordsGrid?.answeredWordList!!.isEmpty()  ){
+        if (gameDate != null && wordsGrid != null && !wordsGrid?.answeredWordList!!.isEmpty()) {
 
             ShabdjalUtils.saveGame(this, wordsGrid?.answeredWordList!!, gameDate.toString())
-            if(tv_timer_text != null){
+            if (tv_timer_text != null) {
                 pauseOffset = SystemClock.elapsedRealtime() - tv_timer_text!!.base
-                PrefDataShabdjal.setLongPrefs(applicationContext, PrefDataShabdjal.Key.PAUSE_OFF_SET+gameDate, pauseOffset)
+                PrefDataShabdjal.setLongPrefs(
+                    applicationContext, PrefDataShabdjal.Key.PAUSE_OFF_SET + gameDate, pauseOffset
+                )
             }
         }
         //new comment
@@ -1125,11 +1204,11 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
 
     private fun openLanguageBottomSheet() {
         val bottomSheetDialog = BottomSheetDialog(
-            this,
-            R.style.AppBottomSheetDialogTheme
+            this, R.style.AppBottomSheetDialogTheme
         )
 
-        val view = this.layoutInflater.inflate(R.layout.shabdjaal_language_bottom_sheet_layout_, null)
+        val view =
+            this.layoutInflater.inflate(R.layout.shabdjaal_language_bottom_sheet_layout_, null)
 
         val lLayHindiLang: LinearLayout? = view.findViewById(R.id.lLayHindiLang)
         val lLayEnglishLang: LinearLayout? = view.findViewById(R.id.lLayEnglishLang)
@@ -1138,14 +1217,18 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
         val tvEngLang: TextView? = view.findViewById(R.id.tvEngLang)
         //  val lLayQuitGame: LinearLayout? = view.findViewById(R.id.lLayQuitGame)
 
-        if(PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE)!=null &&
-            PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE).equals("hindi")){
+        if (PrefDataShabdjal.getStringPrefs(
+                this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE
+            ) != null && PrefDataShabdjal.getStringPrefs(
+                this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE
+            ).equals("hindi")
+        ) {
             lLayHindiLang?.setBackgroundColor(Color.BLACK);
             lLayEnglishLang?.setBackgroundColor(Color.WHITE);
 
             tvHindiLang?.setTextColor(Color.parseColor("#FFFFFF"));
             tvEngLang?.setTextColor(Color.parseColor("#000000"));
-        }else{
+        } else {
             lLayEnglishLang?.setBackgroundColor(Color.BLACK);
             lLayHindiLang?.setBackgroundColor(Color.WHITE);
 
@@ -1155,10 +1238,14 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
 
 
         lLayHindiLang?.setOnClickListener {
-            if(PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE)!=null &&
-                PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE).equals("hindi")) {
+            if (PrefDataShabdjal.getStringPrefs(
+                    this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE
+                ) != null && PrefDataShabdjal.getStringPrefs(
+                    this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE
+                ).equals("hindi")
+            ) {
                 lLayHindiLang.isClickable = false
-            }else{
+            } else {
 
                 lLayHindiLang?.setBackgroundColor(Color.BLACK);
                 lLayEnglishLang?.setBackgroundColor(Color.WHITE);
@@ -1167,21 +1254,32 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
                 tvEngLang?.setTextColor(Color.parseColor("#000000"));
 
                 ShabdjalLanguagePreference.getInstance(baseContext).setLanguage("hi")
-                PrefDataShabdjal.setStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE,PrefDataShabdjal.Key.HINDI)
-                PrefDataShabdjal.setStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE,PrefDataShabdjal.Key.HINDI)
+                PrefDataShabdjal.setStringPrefs(
+                    this@ShabdjaalPlayGameActivity,
+                    PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE,
+                    PrefDataShabdjal.Key.HINDI
+                )
+                PrefDataShabdjal.setStringPrefs(
+                    this@ShabdjaalPlayGameActivity,
+                    PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE,
+                    PrefDataShabdjal.Key.HINDI
+                )
 
-                if(!TextUtils.isEmpty(PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.GAME_USER_ID))){
+                if (!TextUtils.isEmpty(
+                        PrefDataShabdjal.getStringPrefs(
+                            this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.GAME_USER_ID
+                        )
+                    )
+                ) {
                     val intent = Intent(this, ShabdjaalPlayGameActivity::class.java)
                     intent.putExtra("Date", puzzleGameDate)
-                    intent.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
                     finish()
-                }else{
+                } else {
                     val intent = Intent(this, ShabdjaalPlayGameActivity::class.java)
                     intent.putExtra("Date", puzzleGameDate)
-                    intent.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
                     finish()
                 }
@@ -1190,11 +1288,15 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
 
         }
 
-        lLayEnglishLang?.setOnClickListener{
-            if(PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE)!=null &&
-                PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE).equals("english")) {
+        lLayEnglishLang?.setOnClickListener {
+            if (PrefDataShabdjal.getStringPrefs(
+                    this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE
+                ) != null && PrefDataShabdjal.getStringPrefs(
+                    this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE
+                ).equals("english")
+            ) {
                 lLayEnglishLang.isClickable = false
-            }else{
+            } else {
 
                 lLayEnglishLang?.setBackgroundColor(Color.BLACK);
                 lLayHindiLang?.setBackgroundColor(Color.WHITE);
@@ -1204,21 +1306,32 @@ class ShabdjaalPlayGameActivity : ShabdjalBaseActivity(), View.OnClickListener {
 
                 bottomSheetDialog.dismiss()
                 ShabdjalLanguagePreference.getInstance(baseContext).setLanguage("")
-                PrefDataShabdjal.setStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE,PrefDataShabdjal.Key.ENGLISH)
-                PrefDataShabdjal.setStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE,PrefDataShabdjal.Key.ENGLISH)
+                PrefDataShabdjal.setStringPrefs(
+                    this@ShabdjaalPlayGameActivity,
+                    PrefDataShabdjal.Key.SHABDJAAL_LANGUAGE,
+                    PrefDataShabdjal.Key.ENGLISH
+                )
+                PrefDataShabdjal.setStringPrefs(
+                    this@ShabdjaalPlayGameActivity,
+                    PrefDataShabdjal.Key.SHABDJAAL_APP_LANGUAGE,
+                    PrefDataShabdjal.Key.ENGLISH
+                )
 
-                if(!TextUtils.isEmpty(PrefDataShabdjal.getStringPrefs(this@ShabdjaalPlayGameActivity,PrefDataShabdjal.Key.GAME_USER_ID))){
+                if (!TextUtils.isEmpty(
+                        PrefDataShabdjal.getStringPrefs(
+                            this@ShabdjaalPlayGameActivity, PrefDataShabdjal.Key.GAME_USER_ID
+                        )
+                    )
+                ) {
                     val intent = Intent(this, EnglishShabdjaalPlayGameActivity::class.java)
                     intent.putExtra("Date", puzzleGameDate)
-                    intent.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
                     finish()
-                }else{
+                } else {
                     val intent = Intent(this, EnglishShabdjaalPlayGameActivity::class.java)
                     intent.putExtra("Date", puzzleGameDate)
-                    intent.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
                     finish()
                 }

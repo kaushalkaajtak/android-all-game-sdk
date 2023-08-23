@@ -128,15 +128,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
     private ImageView ivHamburger;
 
     private CLICK_ITEM click_item;
-    private int[] keyIdArray = {R.id.tv_ka, R.id.tv_kha, R.id.tv_ga, R.id.tv_gha, R.id.tv_anga,
-            R.id.tv_cha, R.id.tv_chah, R.id.tv_ja, R.id.tv_jha, R.id.tv_ea,
-            R.id.tv_ta, R.id.tdha, R.id.tv_da, R.id.tv_dha, R.id.tv_ada,
-            R.id.tv_tea, R.id.tv_tha, R.id.tv_dea, R.id.tv_dhea, R.id.tv_na,
-            R.id.tv_pa, R.id.tv_fa, R.id.tv_ba, R.id.tv_ma, R.id.tv_ya,
-            R.id.tv_ra, R.id.tv_la, R.id.tv_va, R.id.tv_sha, R.id.tv_skha,
-            R.id.tv_sa, R.id.tv_ha, R.id.tv_chota_a, R.id.tv_bada_a, R.id.tv_choti_e,
-            R.id.tv_badi_e, R.id.tv_chota_u, R.id.tv_bada_u, R.id.tv_rishi, R.id.tv_lira,
-            R.id.tv_chot_ae, R.id.tv_bada_ae, R.id.tv_chota_o, R.id.tv_bada_o};
+    private int[] keyIdArray = {R.id.tv_ka, R.id.tv_kha, R.id.tv_ga, R.id.tv_gha, R.id.tv_anga, R.id.tv_cha, R.id.tv_chah, R.id.tv_ja, R.id.tv_jha, R.id.tv_ea, R.id.tv_ta, R.id.tdha, R.id.tv_da, R.id.tv_dha, R.id.tv_ada, R.id.tv_tea, R.id.tv_tha, R.id.tv_dea, R.id.tv_dhea, R.id.tv_na, R.id.tv_pa, R.id.tv_fa, R.id.tv_ba, R.id.tv_ma, R.id.tv_ya, R.id.tv_ra, R.id.tv_la, R.id.tv_va, R.id.tv_sha, R.id.tv_skha, R.id.tv_sa, R.id.tv_ha, R.id.tv_chota_a, R.id.tv_bada_a, R.id.tv_choti_e, R.id.tv_badi_e, R.id.tv_chota_u, R.id.tv_bada_u, R.id.tv_rishi, R.id.tv_lira, R.id.tv_chot_ae, R.id.tv_bada_ae, R.id.tv_chota_o, R.id.tv_bada_o};
     private int index = 0;
     private int currentAttempt = 1;
     private String correctWord = "";
@@ -144,7 +136,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
     private TextView tvKa;
     private TextView tvCross;
     private TextView tvEnter;
-    private RelativeLayout rl_uttar_dekho_btn, continue_btn, agla_shabd_btn, rl_share_btn,rl_hint,rLayUttarDekho;
+    private RelativeLayout rl_uttar_dekho_btn, continue_btn, agla_shabd_btn, rl_share_btn, rl_hint, rLayUttarDekho;
     private GamePresenter gamePresenter;
     private FrameLayout flLoading;
     private boolean mTimingRunning;
@@ -156,7 +148,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
     private InterstitialAd mInterstitialAd;
     private Animation shakeAnimation;
     private boolean isUttarDekheClicked;
-    private RewardedAd mRewardedAd;
+    private InterstitialAd hintInterstialAd;
     private Handler handler = new Handler();
     private boolean isHintPressed;
     private LinearLayout ll_google_sign_in;
@@ -181,17 +173,17 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
     private LinearLayout lLayTerms;
     private TextView nav_name;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        try{
+        try {
             setContentView(R.layout.activity_game);
             interstitialAdd();
-            initRewardAdd();
-        }catch (Exception ex){
-
+            hintInterstitialAds();
+        } catch (Exception ex) {
+            Log.d("ADV_LOAD_EXP", ex.toString());
         }
-
 
         adRequest = new AdRequest.Builder().build();
         rLayUttarDekho = findViewById(R.id.rLayUttarDekho);
@@ -225,7 +217,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
 
         nav_name = header.findViewById(R.id.nav_name);
 
-        if(CommonPreference.getInstance(this).getString(CommonPreference.Key.NAME) !=null){
+        if (CommonPreference.getInstance(this).getString(CommonPreference.Key.NAME) != null) {
             nav_name.setText(CommonPreference.getInstance(this).getString(CommonPreference.Key.NAME));
         }
 
@@ -238,18 +230,18 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
 
 
         lLayMain = findViewById(R.id.lLayMain);
-        try{
+        try {
             mediaPlayer = MediaPlayer.create(this, R.raw.peaceful_garden_healing);
             mediaPlayerGameComplete = MediaPlayer.create(this, R.raw.game_complete);
             mediaPlayerWrongAnswer = MediaPlayer.create(this, R.raw.for_error_music);
-        }catch (Exception ex){
+        } catch (Exception ex) {
 
         }
 
 
-        if(CommonPreference.getInstance(GameActivity.this).getSoundState()){
+        if (CommonPreference.getInstance(GameActivity.this).getSoundState()) {
             mediaPlayer.start();
-        }else {
+        } else {
             mediaPlayer.stop();
         }
 
@@ -270,8 +262,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
         mAdView.setAdUnitId(CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_BANNER_APP_ID));
         mAdView.loadAd(adRequest);*/
 
-        animBlink = AnimationUtils.loadAnimation(this,
-                R.anim.blink);
+        animBlink = AnimationUtils.loadAnimation(this, R.anim.blink);
         initViewClick();
 
         gamePresenter = new GamePresenter(this, GameActivity.this);
@@ -287,7 +278,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
         }*/
 
         if (gamePresenter != null) {
-                GetWordRequest getWordRequest = new GetWordRequest();
+            GetWordRequest getWordRequest = new GetWordRequest();
             getWordRequest.setUserId(CommonPreference.getInstance(this.getApplicationContext()).getString(CommonPreference.Key.GAME_USER_ID));
             getWordRequest.setLanguageId("1");
             gamePresenter.fetchNewWord(GameActivity.this, getWordRequest);
@@ -302,8 +293,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
         llHindi = findViewById(R.id.llHindi);
         llEng = findViewById(R.id.llEng);
 
-        if(CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE)!=null &&
-                CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")){
+        if (CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE) != null && CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
             llHindi.setBackgroundColor(Color.parseColor("#4267B2"));
 
             //llHindi.setBackgroundColor(Color.BLACK);
@@ -311,10 +301,10 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
 
             tvEng.setTextColor(Color.parseColor("#000000"));
             tvHindi.setTextColor(Color.parseColor("#FFFFFF"));
-        }else{
+        } else {
             llEng.setBackgroundColor(Color.parseColor("#4267B2"));
 
-           // llEng.setBackgroundColor(Color.BLACK);
+            // llEng.setBackgroundColor(Color.BLACK);
             llHindi.setBackgroundColor(Color.WHITE);
 
             tvHindi.setTextColor(Color.parseColor("#000000"));
@@ -326,12 +316,11 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
             public void onClick(View v) {
                 CleverTapEvent.getCleverTapEvents(GameActivity.this).createOnlyEvent(CleverTapEventConstants.BUTTON_ENGLISH);
 
-                if(CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE)!=null &&
-                        CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("english")) {
+                if (CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE) != null && CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("english")) {
                     llEng.setClickable(false);
-                }else{
+                } else {
 
-                    try{
+                    try {
                         GameDataManager.getInstance().getDataList().clear();
                         llEng.setBackgroundColor(Color.parseColor("#4267B2"));
                         // llEng.setBackgroundColor(Color.BLACK);
@@ -342,14 +331,14 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
 
 
                         ShabdamLanguagePreference.getInstance(GameActivity.this).setLanguage("");
-                        CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE,CommonPreference.Key.ENGLISH);
-                        CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE,CommonPreference.Key.ENGLISH);
+                        CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE, CommonPreference.Key.ENGLISH);
+                        CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE, CommonPreference.Key.ENGLISH);
 
                         Intent intent = new Intent(GameActivity.this, EnglishGameActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                         finish();
-                    }catch (Exception ex){
+                    } catch (Exception ex) {
 
                     }
                 }
@@ -361,11 +350,10 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
             public void onClick(View v) {
                 CleverTapEvent.getCleverTapEvents(GameActivity.this).createOnlyEvent(CleverTapEventConstants.BUTTON_HINDI);
 
-                if(CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE)!=null &&
-                        CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
+                if (CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE) != null && CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
                     llHindi.setClickable(false);
-                }else{
-                    try{
+                } else {
+                    try {
                         GameDataManager.getInstance().getDataList().clear();
                         llHindi.setBackgroundColor(Color.parseColor("#4267B2"));
 
@@ -376,14 +364,14 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                         tvHindi.setTextColor(Color.parseColor("#FFFFFF"));
 
                         ShabdamLanguagePreference.getInstance(GameActivity.this).setLanguage("hi");
-                        CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE,CommonPreference.Key.HINDI);
-                        CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE,CommonPreference.Key.HINDI);
+                        CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE, CommonPreference.Key.HINDI);
+                        CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE, CommonPreference.Key.HINDI);
 
                         Intent intent = new Intent(GameActivity.this, GameActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                         finish();
-                    }catch (Exception ex){
+                    } catch (Exception ex) {
 
                     }
 
@@ -393,10 +381,9 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
 
     }
 
+
     private void googleSignIn() {
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
     }
@@ -413,13 +400,13 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
              handleSignInResult(task);
          }
      }*/
-    private void openDrawer(){
+    private void openDrawer() {
         drawerLayout.openDrawer(GravityCompat.START);
     }
 
-    private void closeDrawer(){
+    private void closeDrawer() {
 
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)){
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
         }
     }
@@ -429,8 +416,8 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == UPDATE_REQUEST_CODE){
-            if(requestCode != RESULT_OK){
+        if (requestCode == UPDATE_REQUEST_CODE) {
+            if (requestCode != RESULT_OK) {
                 finish();
             }
         }
@@ -473,7 +460,6 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
     }
 
 
-
     @Override
     public void onAddUser(com.tvtoday.gamelibrary.shabdamgamesdk.model.adduser.Data data) {
         if (data != null) {
@@ -497,24 +483,23 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
         });*/
 
         AdRequest adRequest = new AdRequest.Builder().build();
-        InterstitialAd.load(this, CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_INTERTETIAL_APP_ID), adRequest,
-                new InterstitialAdLoadCallback() {
-                    @Override
-                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
-                        // The mInterstitialAd reference will be null until
-                        // an ad is loaded.
-                        mInterstitialAd = interstitialAd;
-                        //Log.i(TAG, "onAdLoaded");
-                        // loadAdd();
-                    }
+        InterstitialAd.load(this, CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_INTERTETIAL_APP_ID), adRequest, new InterstitialAdLoadCallback() {
+            @Override
+            public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                // The mInterstitialAd reference will be null until
+                // an ad is loaded.
+                mInterstitialAd = interstitialAd;
+                //Log.i(TAG, "onAdLoaded");
+                // loadAdd();
+            }
 
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                        // Handle the error
-                        //Log.i(TAG, loadAdError.getMessage());
-                        mInterstitialAd = null;
-                    }
-                });
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                // Handle the error
+                //Log.i(TAG, loadAdError.getMessage());
+                mInterstitialAd = null;
+            }
+        });
     }
 
 
@@ -557,7 +542,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                 openUttarDekho();
             }
             Toast.makeText(this, "Ad did not load", Toast.LENGTH_SHORT).show();
-            if(rl_uttar_dekho_btn != null){
+            if (rl_uttar_dekho_btn != null) {
                 rl_uttar_dekho_btn.setEnabled(true);
             }
 
@@ -596,60 +581,38 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
         finish();
     }
 
-    private void initRewardAdd() {
+    private void hintInterstitialAds() {
         AdRequest adRequest = new AdRequest.Builder().build();
 
-        RewardedAd.load(this, CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_REWARDED_APP_ID),
-                adRequest, new RewardedAdLoadCallback() {
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                        // Handle the error.
-                        // Log.d(TAG, loadAdError.getMessage());
-                        // Toast.makeText(this,)
-                        mRewardedAd = null;
-                        //initRewardAdd();
-                    }
+        String adId = CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_INTERTETIAL_APP_ID);
 
-                    @Override
-                    public void onAdLoaded(@NonNull RewardedAd rewardedAd) {
-                        mRewardedAd = rewardedAd;
+        InterstitialAd.load(this, adId, adRequest, new InterstitialAdLoadCallback() {
+            @Override
+            public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                hintInterstialAd = interstitialAd;
+                rl_hint.setVisibility(View.VISIBLE);
+            }
 
-
-                        // rl_hint.setBackgroundResource(R.drawable.bg_hint);
-                        rl_hint.setVisibility(View.VISIBLE);
-                        // Log.d(TAG, "Ad was loaded.");
-                    }
-                });
-
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                hintInterstialAd = null;
+            }
+        });
 
     }
 
-    private void showRewardAdd() {
-        if (mRewardedAd != null) {
-            mRewardedAd.show(this, new OnUserEarnedRewardListener() {
-                @Override
-                public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
-                    // Handle the reward.
-                    //  Log.d(TAG, "The user earned the reward.");
-                    int rewardAmount = rewardItem.getAmount();
-                    String rewardTpype = rewardItem.getType();
-                    showHint();
-                    initRewardAdd();
-                }
-            });
-            mRewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
-                @Override
-                public void onAdShowedFullScreenContent() {
-                    // Called when ad is shown.
-                    // Log.d(TAG, "Ad was shown.");
-                }
+    private void showHintInterstitialAd() {
+        if (hintInterstialAd != null) {
+            hintInterstialAd.show(this);
+            hintInterstialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+
 
                 @Override
                 public void onAdFailedToShowFullScreenContent(AdError adError) {
                     // Called when ad fails to show.
                     // Log.d(TAG, "Ad failed to show.");
                     showHint();
-                    initRewardAdd();
+                    hintInterstitialAds();
                 }
 
                 @Override
@@ -660,14 +623,15 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                     /*isHintTaken = false;
                     rl_hint.setBackgroundResource(R.drawable.bg_hint);
                     rl_hint.setClickable(true);*/
-                    mRewardedAd = null;
-                    initRewardAdd();
+                    hintInterstialAd = null;
+                    hintInterstitialAds();
+                    showHint();
                 }
             });
         } else {
             // Log.d(TAG, "The rewarded ad wasn't ready yet.");
             // showHint();
-            initRewardAdd();
+            hintInterstitialAds();
         }
     }
 
@@ -679,7 +643,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                 if ((SystemClock.elapsedRealtime() - tv_timer_text.getBase() >= 3600000)) {
                     tv_timer_text.setBase(SystemClock.elapsedRealtime());
 
-                    endGame(Constants.LOSS, String.valueOf(3600000 / 1000), currentAttempt,"1");
+                    endGame(Constants.LOSS, String.valueOf(3600000 / 1000), currentAttempt, "1");
 
                     Toast.makeText(GameActivity.this, "Game Finished!", Toast.LENGTH_SHORT).show();
                 }
@@ -701,9 +665,9 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
             submitGameRequest.setApp_id(CommonPreference.getInstance(GameActivity.this.getApplicationContext()).getString(CommonPreference.Key.SHABDAM_APP_ID));
             gamePresenter.submitGame(submitGameRequest);
         } else {
-            if(CommonPreference.getInstance(GameActivity.this).getSoundState()){
+            if (CommonPreference.getInstance(GameActivity.this).getSoundState()) {
                 mediaPlayerGameComplete.start();
-            }else {
+            } else {
                 mediaPlayerGameComplete.pause();
             }
             GameDataManager.getInstance().removeData();
@@ -714,6 +678,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
             intent.putExtra("type", "2");
             startActivity(intent);
             finish();
+
         }
     }
 
@@ -733,18 +698,18 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
     @Override
     protected void onResume() {
         super.onResume();
-        try{
-            if(!CommonPreference.getInstance(GameActivity.this).getSoundState()){
-                if(mediaPlayer !=null){
+        try {
+            if (!CommonPreference.getInstance(GameActivity.this).getSoundState()) {
+                if (mediaPlayer != null) {
                     mediaPlayer.pause();
                     mediaPlayerGameComplete.pause();
                     mediaPlayerWrongAnswer.pause();
                 }
 
             }
-            if(CommonPreference.getInstance(GameActivity.this).getSoundState()){
+            if (CommonPreference.getInstance(GameActivity.this).getSoundState()) {
                 mediaPlayer.start();
-            }else {
+            } else {
                 mediaPlayer.pause();
             }
 
@@ -753,7 +718,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
             } else {
                 click_item = null;
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
 
         }
 
@@ -870,7 +835,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
         } else if (id == R.id.rl_uttar_dekho_btn) {
             CleverTapEvent.getCleverTapEvents(GameActivity.this).createOnlyEvent(CleverTapEventConstants.UTTAR_DEKHO);
             click_item = CLICK_ITEM.UTTAR_DEKHO;
-            if(rl_uttar_dekho_btn != null){
+            if (rl_uttar_dekho_btn != null) {
                 rl_uttar_dekho_btn.setEnabled(false);
             }
             if (!TextUtils.isEmpty(correctWord)) {
@@ -881,25 +846,24 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                     statisticsPopup(null);
                 } else {
                     isUttarDekheClicked = true;
-                    endGame(Constants.LOSS, String.valueOf(pauseOffset / 1000), currentAttempt,"1");
+                    endGame(Constants.LOSS, String.valueOf(pauseOffset / 1000), currentAttempt, "1");
                 }
             }
         } else if (id == R.id.iv_question_mark_btn) {
             CleverTapEvent.getCleverTapEvents(GameActivity.this).createOnlyEvent(CleverTapEventConstants.QUESTION_MARK);
             kaiseKhelePopup();
-        }
-        else if(id == R.id.ivHome){
+        } else if (id == R.id.ivHome) {
             String activityToStart = "com.tvtoday.gamelibrary.core.views.activity.homePage.HomeActivity";
             try {
                 Class<?> c = Class.forName(activityToStart);
                 Intent intent = new Intent(this, c);
-                intent.putExtra("called_game_id",1);
+                intent.putExtra("called_game_id", 1);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
             } catch (ClassNotFoundException ignored) {
             }
-        }else if (id == R.id.iv_trophy_btn) {
+        } else if (id == R.id.iv_trophy_btn) {
             CleverTapEvent.getCleverTapEvents(GameActivity.this).createOnlyEvent(CleverTapEventConstants.LEADERBOARD_ICON);
             startActivity(new Intent(this, ShabdamLeaderBoardActivity.class));
             //finish();
@@ -915,9 +879,9 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
             //   startActivityForResult(new Intent(this, ShabdamSettingsActivity.class), 200);
             Intent intent = new Intent(this, ShabdamSettingsActivity.class);
             someActivityResultLauncher.launch(intent);
-        } else if(id == R.id.iv_LangChange){
+        } else if (id == R.id.iv_LangChange) {
 
-         // openLanguageBottomSheet();
+            // openLanguageBottomSheet();
 
          /*   String activityToStart = "com.tvtoday.gamelibrary.core.views.activity.languageSelection.LanguageSelectionActivity";
             try {
@@ -928,8 +892,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
 
             } catch (ClassNotFoundException ignored) {
             }*/
-        }
-        else if (id == R.id.rl_hint) {
+        } else if (id == R.id.rl_hint) {
             CleverTapEvent.getCleverTapEvents(GameActivity.this).createOnlyEvent(CleverTapEventConstants.HINT_BUTTON);
             // showHint();
 
@@ -938,16 +901,16 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                 ToastUtils.show(GameActivity.this, "Your hint button has activated");
             }*/
 
-            if(currentAttempt<4){
+            if (currentAttempt < 4) {
 
-                if(!isHintTaken){
+                if (!isHintTaken) {
                     rl_hint.setBackgroundResource(R.drawable.bg_hint_gray);
                     rl_hint.setClickable(false);
                     if (hintCount < 2) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                showRewardAdd();
+                                showHintInterstitialAd();
                             }
                         });
 
@@ -958,19 +921,19 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                     }
                     isHintTaken = true;
                 }
-            }else{
+            } else {
                 rl_hint.setBackgroundResource(R.drawable.bg_hint_gray);
                 rl_hint.setClickable(false);
 
                 if (hintCount < 2) {
-                    showRewardAdd();
+                    showHintInterstitialAd();
                     // loadAdd();
                     // isHintPressed = true;
                     click_item = CLICK_ITEM.HINT;
                     //loadAdd();
                 }
             }
-        }else if(id == R.id.ivHamburger) {
+        } else if (id == R.id.ivHamburger) {
 
 
            /* String activityToStart = "com.tvtoday.gamelibrary.core.views.activity.languageSelection.LanguageSelectionActivity";
@@ -980,31 +943,31 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                 startActivity(intent);
             } catch (ClassNotFoundException ignored) {
             }*/
-              openDrawer();
-        }else if(id == R.id.lLayTerms){
+            openDrawer();
+        } else if (id == R.id.lLayTerms) {
             closeDrawer();
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://docs.google.com/document/d/1efJN1iZrt9r_hd4hK8_Kct0tUsnVNptSXSm_26DcE6Q/edit?usp=sharing"));
             startActivity(browserIntent);
-        }else if(id == R.id.lLayPrivacy){
+        } else if (id == R.id.lLayPrivacy) {
             closeDrawer();
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://docs.google.com/document/d/1efJN1iZrt9r_hd4hK8_Kct0tUsnVNptSXSm_26DcE6Q/edit?usp=sharing"));
             startActivity(browserIntent);
-        }else if(id == R.id.lLaySetting){
+        } else if (id == R.id.lLaySetting) {
             closeDrawer();
             Intent intent = new Intent(GameActivity.this, ShabdamSettingsActivity.class);
             startActivity(intent);
 
-        }else if(id == R.id.lLayShare){
+        } else if (id == R.id.lLayShare) {
             closeDrawer();
-            Intent intent2 = new Intent(); intent2.setAction(Intent.ACTION_SEND);
+            Intent intent2 = new Intent();
+            intent2.setAction(Intent.ACTION_SEND);
             intent2.setType("text/plain");
-            intent2.putExtra(Intent.EXTRA_TEXT, "Love playing crossword, check out the new Hindi crossword on Android https://play.google.com/store/apps/details?id=com.tvtoday.crosswordhindi" +  "\n" +
-                    "An iPhone version is also available: https://apps.apple.com/us/app/vargpaheli/id1622360590");
+            intent2.putExtra(Intent.EXTRA_TEXT, "Love playing crossword, check out the new Hindi crossword on Android https://play.google.com/store/apps/details?id=com.tvtoday.crosswordhindi" + "\n" + "An iPhone version is also available: https://apps.apple.com/us/app/vargpaheli/id1622360590");
             startActivity(Intent.createChooser(intent2, "Share via"));
 
-        }else if(id == R.id.lLayTutorial){
+        } else if (id == R.id.lLayTutorial) {
 
-        }else if(id == R.id.lLayTvToday){
+        } else if (id == R.id.lLayTvToday) {
             closeDrawer();
 
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/developer?id=TV+Today+Network"));
@@ -1013,20 +976,18 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
         }
     }
 
-    ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        // There are no request codes
-                        Intent data = result.getData();
-                        openLogin();
-                    }
-                }
-            });
+    ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            if (result.getResultCode() == Activity.RESULT_OK) {
+                // There are no request codes
+                Intent data = result.getData();
+                openLogin();
+            }
+        }
+    });
 
-    private void openLogin(){
+    private void openLogin() {
         Intent intent = new Intent(GameActivity.this, UserDetailActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.setComponent(new ComponentName(GameActivity.this, UserDetailActivity.class));
@@ -1051,19 +1012,17 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
         someActivityResultLauncherLogin.launch(signInIntent);
     }
 
-    ActivityResultLauncher<Intent> someActivityResultLauncherLogin = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        // There are no request codes
-                        Intent data = result.getData();
-                        com.google.android.gms.tasks.Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-                        handleSignInResult(task);
-                    }
-                }
-            });
+    ActivityResultLauncher<Intent> someActivityResultLauncherLogin = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            if (result.getResultCode() == Activity.RESULT_OK) {
+                // There are no request codes
+                Intent data = result.getData();
+                com.google.android.gms.tasks.Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                handleSignInResult(task);
+            }
+        }
+    });
 
 
     private void statisticsPopup(Data data) {
@@ -1085,10 +1044,10 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
         ImageView cancel_btn = dialogView.findViewById(R.id.iv_cancel_btn);
         ImageView iv_LangChange = dialogView.findViewById(R.id.iv_LangChange);
 
-         LinearLayout llHindi = dialogView.findViewById(R.id.llHindi);
-         LinearLayout llEng = dialogView.findViewById(R.id.llEng);
-         TextView tvEng = dialogView.findViewById(R.id.tvEng);
-         TextView tvHindi= dialogView.findViewById(R.id.tvHindi);
+        LinearLayout llHindi = dialogView.findViewById(R.id.llHindi);
+        LinearLayout llEng = dialogView.findViewById(R.id.llEng);
+        TextView tvEng = dialogView.findViewById(R.id.tvEng);
+        TextView tvHindi = dialogView.findViewById(R.id.tvHindi);
         cancel_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1188,8 +1147,6 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
         tv_google_sign_in = dialogView.findViewById(R.id.tv_google_sign_in);
 
 
-
-
         if (TextUtils.isEmpty(CommonPreference.getInstance(GameActivity.this.getApplicationContext()).getString(CommonPreference.Key.GAME_USER_ID))) {
             ll_google_sign_in.setVisibility(View.VISIBLE);
             tv_google_sign_in.setOnClickListener(new View.OnClickListener() {
@@ -1276,8 +1233,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                     e.printStackTrace();
                 }
 
-                if (!TextUtils.isEmpty(data.getNoOfAttempts().get1())
-                        && !data.getNoOfAttempts().get1().equalsIgnoreCase("0")) {
+                if (!TextUtils.isEmpty(data.getNoOfAttempts().get1()) && !data.getNoOfAttempts().get1().equalsIgnoreCase("0")) {
                     dialogView.findViewById(R.id.rl_layout1).setVisibility(View.GONE);
                     dialogView.findViewById(R.id.rl_layout_one).setVisibility(View.VISIBLE);
                     ((TextView) dialogView.findViewById(R.id.tv_pb_1)).setText(data.getNoOfAttempts().get1());
@@ -1286,8 +1242,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                     dialogView.findViewById(R.id.rl_layout1).setVisibility(View.VISIBLE);
                 }
 
-                if (!TextUtils.isEmpty(data.getNoOfAttempts().get2())
-                        && !data.getNoOfAttempts().get2().equalsIgnoreCase("0")) {
+                if (!TextUtils.isEmpty(data.getNoOfAttempts().get2()) && !data.getNoOfAttempts().get2().equalsIgnoreCase("0")) {
                     dialogView.findViewById(R.id.rl_layout2).setVisibility(View.GONE);
                     dialogView.findViewById(R.id.rl_layout_two).setVisibility(View.VISIBLE);
                     ((TextView) dialogView.findViewById(R.id.tv_pb_2)).setText(data.getNoOfAttempts().get2());
@@ -1297,8 +1252,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                     dialogView.findViewById(R.id.rl_layout2).setVisibility(View.VISIBLE);
                 }
 
-                if (!TextUtils.isEmpty(data.getNoOfAttempts().get3())
-                        && !data.getNoOfAttempts().get3().equalsIgnoreCase("0")) {
+                if (!TextUtils.isEmpty(data.getNoOfAttempts().get3()) && !data.getNoOfAttempts().get3().equalsIgnoreCase("0")) {
                     dialogView.findViewById(R.id.rl_layout3).setVisibility(View.GONE);
                     dialogView.findViewById(R.id.rl_layout_three).setVisibility(View.VISIBLE);
                     ((TextView) dialogView.findViewById(R.id.tv_pb_3)).setText(data.getNoOfAttempts().get3());
@@ -1308,8 +1262,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                     dialogView.findViewById(R.id.rl_layout3).setVisibility(View.VISIBLE);
                 }
 
-                if (!TextUtils.isEmpty(data.getNoOfAttempts().get4())
-                        && !data.getNoOfAttempts().get4().equalsIgnoreCase("0")) {
+                if (!TextUtils.isEmpty(data.getNoOfAttempts().get4()) && !data.getNoOfAttempts().get4().equalsIgnoreCase("0")) {
                     dialogView.findViewById(R.id.rl_layout4).setVisibility(View.GONE);
                     dialogView.findViewById(R.id.rl_layout_four).setVisibility(View.VISIBLE);
                     ((TextView) dialogView.findViewById(R.id.tv_pb_4)).setText(data.getNoOfAttempts().get4());
@@ -1319,8 +1272,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                     dialogView.findViewById(R.id.rl_layout4).setVisibility(View.VISIBLE);
                 }
 
-                if (!TextUtils.isEmpty(data.getNoOfAttempts().get5())
-                        && !data.getNoOfAttempts().get5().equalsIgnoreCase("0")) {
+                if (!TextUtils.isEmpty(data.getNoOfAttempts().get5()) && !data.getNoOfAttempts().get5().equalsIgnoreCase("0")) {
                     dialogView.findViewById(R.id.rl_layout5).setVisibility(View.GONE);
                     dialogView.findViewById(R.id.rl_layout_five).setVisibility(View.VISIBLE);
                     ((TextView) dialogView.findViewById(R.id.tv_pb_5)).setText(data.getNoOfAttempts().get5());
@@ -1330,8 +1282,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                     dialogView.findViewById(R.id.rl_layout5).setVisibility(View.VISIBLE);
                 }
 
-                if (!TextUtils.isEmpty(data.getNoOfAttempts().get6())
-                        && !data.getNoOfAttempts().get6().equalsIgnoreCase("0")) {
+                if (!TextUtils.isEmpty(data.getNoOfAttempts().get6()) && !data.getNoOfAttempts().get6().equalsIgnoreCase("0")) {
                     dialogView.findViewById(R.id.rl_layout6).setVisibility(View.GONE);
                     dialogView.findViewById(R.id.rl_layout_six).setVisibility(View.VISIBLE);
                     ((TextView) dialogView.findViewById(R.id.tv_pb_6)).setText(data.getNoOfAttempts().get6());
@@ -1361,20 +1312,19 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
             dialogView.findViewById(R.id.ll_sahi_jawab).setVisibility(View.GONE);
         }
 
-        if(CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE)!=null &&
-                CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")){
+        if (CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE) != null && CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
 
             llHindi.setBackgroundColor(Color.parseColor("#4267B2"));
 
-           // llHindi.setBackgroundColor(Color.BLACK);
+            // llHindi.setBackgroundColor(Color.BLACK);
             llEng.setBackgroundColor(Color.WHITE);
 
             tvEng.setTextColor(Color.parseColor("#000000"));
             tvHindi.setTextColor(Color.parseColor("#FFFFFF"));
-        }else{
+        } else {
             llEng.setBackgroundColor(Color.parseColor("#4267B2"));
 
-          //  llEng.setBackgroundColor(Color.BLACK);
+            //  llEng.setBackgroundColor(Color.BLACK);
             llHindi.setBackgroundColor(Color.WHITE);
 
             tvHindi.setTextColor(Color.parseColor("#000000"));
@@ -1386,23 +1336,22 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
             public void onClick(View v) {
                 CleverTapEvent.getCleverTapEvents(GameActivity.this).createOnlyEvent(CleverTapEventConstants.BUTTON_HINDI);
 
-                if(CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE)!=null &&
-                        CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
+                if (CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE) != null && CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
                     llHindi.setClickable(false);
-                }else{
+                } else {
                     GameDataManager.getInstance().getDataList().clear();
 
                     llHindi.setBackgroundColor(Color.parseColor("#4267B2"));
 
-                 //   llHindi.setBackgroundColor(Color.BLACK);
+                    //   llHindi.setBackgroundColor(Color.BLACK);
                     llEng.setBackgroundColor(Color.WHITE);
 
                     tvEng.setTextColor(Color.parseColor("#000000"));
                     tvHindi.setTextColor(Color.parseColor("#FFFFFF"));
 
                     ShabdamLanguagePreference.getInstance(GameActivity.this).setLanguage("hi");
-                    CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE,CommonPreference.Key.HINDI);
-                    CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE,CommonPreference.Key.HINDI);
+                    CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE, CommonPreference.Key.HINDI);
+                    CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE, CommonPreference.Key.HINDI);
 
                     Intent intent = new Intent(GameActivity.this, GameActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -1417,16 +1366,15 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
             public void onClick(View v) {
                 CleverTapEvent.getCleverTapEvents(GameActivity.this).createOnlyEvent(CleverTapEventConstants.BUTTON_ENGLISH);
 
-                if(CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE)!=null &&
-                        CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("english")) {
+                if (CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE) != null && CommonPreference.getInstance(GameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("english")) {
                     llEng.setClickable(false);
-                }else{
+                } else {
 
                     GameDataManager.getInstance().getDataList().clear();
 
                     llEng.setBackgroundColor(Color.parseColor("#4267B2"));
 
-                   // llEng.setBackgroundColor(Color.BLACK);
+                    // llEng.setBackgroundColor(Color.BLACK);
                     llHindi.setBackgroundColor(Color.WHITE);
 
                     tvHindi.setTextColor(Color.parseColor("#000000"));
@@ -1434,8 +1382,8 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
 
 
                     ShabdamLanguagePreference.getInstance(GameActivity.this).setLanguage("");
-                    CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE,CommonPreference.Key.ENGLISH);
-                    CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE,CommonPreference.Key.ENGLISH);
+                    CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE, CommonPreference.Key.ENGLISH);
+                    CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE, CommonPreference.Key.ENGLISH);
 
                     Intent intent = new Intent(GameActivity.this, EnglishGameActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -1454,8 +1402,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
         CharSequence format = DateFormat.format("MM-dd-yyyy_hh:mm:ss", date);
 
         try {
-            File mainDir = new File(
-                    this.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "FilShare");
+            File mainDir = new File(this.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "FilShare");
             if (!mainDir.exists()) {
                 boolean mkdir = mainDir.mkdir();
             }
@@ -1476,10 +1423,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
     }
 
     private void shareScreenShot(File imageFile) {
-        Uri uri = FileProvider.getUriForFile(
-                this,
-                CommonPreference.getInstance(GameActivity.this.getApplicationContext()).getPackageString("applicationId") + ".GameActivity.provider",
-                imageFile);
+        Uri uri = FileProvider.getUriForFile(this, CommonPreference.getInstance(GameActivity.this.getApplicationContext()).getPackageString("applicationId") + ".GameActivity.provider", imageFile);
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);
         intent.setType("image/*");
@@ -1497,7 +1441,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
     private void callgetStreakAPI() {
         String game_id = CommonPreference.getInstance(this.getApplicationContext()).getString(CommonPreference.Key.GAME_USER_ID);
         gamePresenter = new GamePresenter(this, GameActivity.this);
-        gamePresenter.fetchStatisticsData(game_id,"1");
+        gamePresenter.fetchStatisticsData(game_id, "1");
     }
 
     private void kaiseKhelePopup() {
@@ -1563,7 +1507,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
 
     private void submitText() {
 
-        try{
+        try {
 
             animate();
 
@@ -1586,14 +1530,14 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                         if (index == MAX_ATTEMPT * MAX_CHAR_LENGTH) {
                             if (!Arrays.equals(word_array, entered_word_array)) {
 
-                                endGame(Constants.LOSS, String.valueOf(pauseOffset / 1000), currentAttempt,"1");
+                                endGame(Constants.LOSS, String.valueOf(pauseOffset / 1000), currentAttempt, "1");
                                 //openLeaderBoardOnGameEnd();
                             }
                         }
                     }
                 }
             }, 1600);
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
     }
@@ -1607,7 +1551,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
 
     private void updateCurrentAttempt() {
 
-        try{
+        try {
             //Update Matra
             if (btnIdList != null) {
                 btnIdList.clear();
@@ -1624,11 +1568,11 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
             }
 
 
-            if(currentAttempt > 3){
+            if (currentAttempt > 3) {
                 rl_hint.setBackgroundResource(R.drawable.bg_hint);
                 rl_hint.setClickable(true);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -1704,11 +1648,11 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
             }
             boolean isDump = false;
             for (int i = 0; i < word_array.length; i++) {
-                if((int)word_array[i] == 0){
+                if ((int) word_array[i] == 0) {
                     isDump = true;
                 }
             }
-            if(isDump == true){
+            if (isDump == true) {
                 Log.d("batxmen", correctWord);
                 if (gamePresenter != null) {
                     btnIdList.clear();
@@ -1734,10 +1678,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
     }
 
     private boolean checkLetter(char c) {
-        return ((int) c >= 2309 && (int) c <= 2324)
-                || ((int) c >= 2400 && (int) c <= 2401)|| ((int) c >= 2325 && (int) c <= 2361)
-                || ((int) c >= 2392 && (int) c <= 2399)
-                || (int) c == 2319 || (int) c == 2320 || (int) c == 2323 || (int) c == 2324;
+        return ((int) c >= 2309 && (int) c <= 2324) || ((int) c >= 2400 && (int) c <= 2401) || ((int) c >= 2325 && (int) c <= 2361) || ((int) c >= 2392 && (int) c <= 2399) || (int) c == 2319 || (int) c == 2320 || (int) c == 2323 || (int) c == 2324;
     }
 
     /**
@@ -1771,7 +1712,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
                         saveID(datumCorrectWord.getId());
                     }
 
-                    endGame(Constants.WIN, String.valueOf(pauseOffset / 1000), currentAttempt,"1");
+                    endGame(Constants.WIN, String.valueOf(pauseOffset / 1000), currentAttempt, "1");
                     // save correct word id
                     //datumCorrectWord.getId()
                 }
@@ -1821,9 +1762,9 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
     }
 
     private void openLeaderBoardOnGameEnd() {
-        if(CommonPreference.getInstance(GameActivity.this).getSoundState()){
+        if (CommonPreference.getInstance(GameActivity.this).getSoundState()) {
             mediaPlayerGameComplete.start();
-        }else {
+        } else {
             mediaPlayerGameComplete.pause();
         }
         handler.postDelayed(new Runnable() {
@@ -1855,43 +1796,19 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
     private void animate() {
         try {
             //visibleView.visible()
-            AnimatorSet flipOutAnimatorSet =
-                    (AnimatorSet) AnimatorInflater.loadAnimator(
-                            GameActivity.this,
-                            R.animator.flip_out
-                    );
+            AnimatorSet flipOutAnimatorSet = (AnimatorSet) AnimatorInflater.loadAnimator(GameActivity.this, R.animator.flip_out);
 
-            AnimatorSet flipInAnimatorSet =
-                    (AnimatorSet) AnimatorInflater.loadAnimator(
-                            GameActivity.this,
-                            R.animator.flip_in
-                    );
+            AnimatorSet flipInAnimatorSet = (AnimatorSet) AnimatorInflater.loadAnimator(GameActivity.this, R.animator.flip_in);
 
             //visibleView.visible()
-            AnimatorSet flipOutAnimatorSet2 =
-                    (AnimatorSet) AnimatorInflater.loadAnimator(
-                            GameActivity.this,
-                            R.animator.flip_out
-                    );
+            AnimatorSet flipOutAnimatorSet2 = (AnimatorSet) AnimatorInflater.loadAnimator(GameActivity.this, R.animator.flip_out);
 
-            AnimatorSet flipInAnimatorSet2 =
-                    (AnimatorSet) AnimatorInflater.loadAnimator(
-                            GameActivity.this,
-                            R.animator.flip_in
-                    );
+            AnimatorSet flipInAnimatorSet2 = (AnimatorSet) AnimatorInflater.loadAnimator(GameActivity.this, R.animator.flip_in);
 
             //visibleView.visible()
-            AnimatorSet flipOutAnimatorSet3 =
-                    (AnimatorSet) AnimatorInflater.loadAnimator(
-                            GameActivity.this,
-                            R.animator.flip_out
-                    );
+            AnimatorSet flipOutAnimatorSet3 = (AnimatorSet) AnimatorInflater.loadAnimator(GameActivity.this, R.animator.flip_out);
 
-            AnimatorSet flipInAnimatorSet3 =
-                    (AnimatorSet) AnimatorInflater.loadAnimator(
-                            GameActivity.this,
-                            R.animator.flip_in
-                    );
+            AnimatorSet flipInAnimatorSet3 = (AnimatorSet) AnimatorInflater.loadAnimator(GameActivity.this, R.animator.flip_in);
 
             flipOutAnimatorSet.setTarget(findViewById(getId((currentAttempt - 1) * 3 + 1)));
             flipOutAnimatorSet2.setTarget(findViewById(getId((currentAttempt - 1) * 3 + 2)));
@@ -2135,9 +2052,9 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
             submitText();
         } else {
             mediaPlayerWrongAnswer.start();
-            if(CommonPreference.getInstance(GameActivity.this).getSoundState()){
+            if (CommonPreference.getInstance(GameActivity.this).getSoundState()) {
                 mediaPlayerWrongAnswer.start();
-            }else {
+            } else {
                 mediaPlayerWrongAnswer.pause();
             }
             shakeAnimation();
@@ -2178,8 +2095,8 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
 
     @Override
     protected void onDestroy() {
-        if(mRewardedAd !=null){
-            mRewardedAd.setFullScreenContentCallback(null);
+        if (hintInterstialAd != null) {
+            hintInterstialAd.setFullScreenContentCallback(null);
         }
         mediaPlayer.stop();
         mediaPlayerWrongAnswer.stop();
@@ -2201,7 +2118,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
         gamePresenter = null;
         mGoogleSignInClient = null;
         adRequest = null;
-        mRewardedAd = null;
+        hintInterstialAd = null;
         shakeAnimation = null;
         super.onDestroy();
     }
@@ -2210,7 +2127,7 @@ public class GameActivity extends ShabdamBaseActivity implements View.OnClickLis
     public void onGameSubmit() {
         if (isUttarDekheClicked) {
             isUttarDekheClicked = false;
-            if(rl_uttar_dekho_btn != null){
+            if (rl_uttar_dekho_btn != null) {
                 rl_uttar_dekho_btn.setEnabled(false);
             }
 

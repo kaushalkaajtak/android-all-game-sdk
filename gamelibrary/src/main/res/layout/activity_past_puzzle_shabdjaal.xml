@@ -141,17 +141,17 @@
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_marginTop="20dp"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginTop="20dp">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvPastPuzzle"
-            android:background="@color/white"
             android:layout_width="match_parent"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            android:layout_height="match_parent"
+            android:background="@color/white"
             android:orientation="vertical"
-            tools:listitem="@layout/past_puzzle_outer_rv_item_shabdjaal"
-            android:layout_height="match_parent"/>
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/past_puzzle_outer_rv_item_shabdjaal" />
     </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>

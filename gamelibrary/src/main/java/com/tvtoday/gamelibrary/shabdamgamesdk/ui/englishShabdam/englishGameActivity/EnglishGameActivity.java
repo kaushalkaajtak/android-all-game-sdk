@@ -54,14 +54,10 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.OnUserEarnedRewardListener;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
-import com.google.android.gms.ads.rewarded.RewardItem;
-import com.google.android.gms.ads.rewarded.RewardedAd;
-import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -106,11 +102,11 @@ import java.util.concurrent.TimeUnit;
 /**
  * Main Activity
  */
-public class EnglishGameActivity extends AppCompatActivity implements View.OnClickListener, GameView,  Animator.AnimatorListener {
+public class EnglishGameActivity extends AppCompatActivity implements View.OnClickListener, GameView, Animator.AnimatorListener {
 
-   private MediaPlayer mediaPlayer;
-   private MediaPlayer mediaPlayerGameComplete;
-   private MediaPlayer mediaPlayerWrongAnswer;
+    private MediaPlayer mediaPlayer;
+    private MediaPlayer mediaPlayerGameComplete;
+    private MediaPlayer mediaPlayerWrongAnswer;
 
     public static final int MAX_CHAR_LENGTH = 5;
     public static final int MAX_ATTEMPT = 6;
@@ -141,11 +137,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
     private TextView tvHindi;
 
     private CLICK_ITEM click_item;
-    private int[] keyIdArray = {R.id.tv_Q, R.id.tv_W, R.id.tv_E, R.id.tv_R, R.id.tv_T,
-            R.id.tv_Y, R.id.tv_U, R.id.tv_I, R.id.tv_O, R.id.tv_P,
-            R.id.tv_A, R.id.tv_S, R.id.tv_D, R.id.tv_F, R.id.tv_G,
-            R.id.tv_H, R.id.tv_J, R.id.tv_K, R.id.tv_L, R.id.tv_Z,
-            R.id.tv_X, R.id.tv_C, R.id.tv_V, R.id.tv_B, R.id.tv_N,R.id.tv_M,};
+    private int[] keyIdArray = {R.id.tv_Q, R.id.tv_W, R.id.tv_E, R.id.tv_R, R.id.tv_T, R.id.tv_Y, R.id.tv_U, R.id.tv_I, R.id.tv_O, R.id.tv_P, R.id.tv_A, R.id.tv_S, R.id.tv_D, R.id.tv_F, R.id.tv_G, R.id.tv_H, R.id.tv_J, R.id.tv_K, R.id.tv_L, R.id.tv_Z, R.id.tv_X, R.id.tv_C, R.id.tv_V, R.id.tv_B, R.id.tv_N, R.id.tv_M,};
 
     private int index = 0;
     private int currentAttempt = 1;
@@ -154,7 +146,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
 
     private TextView tvCross;
     private TextView tvEnter;
-    private RelativeLayout rl_uttar_dekho_btn, continue_btn, agla_shabd_btn, rl_share_btn,rl_hint,rLayUttarDekho;
+    private RelativeLayout rl_uttar_dekho_btn, continue_btn, agla_shabd_btn, rl_share_btn, rl_hint, rLayUttarDekho;
     private GamePresenter gamePresenter;
     private FrameLayout flLoading;
     private boolean mTimingRunning;
@@ -166,7 +158,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
     private InterstitialAd mInterstitialAd;
     private Animation shakeAnimation;
     private boolean isUttarDekheClicked;
-    private RewardedAd mRewardedAd;
+    private InterstitialAd hintInterstitialAd;
     private Handler handler = new Handler();
     private boolean isHintPressed;
     private LinearLayout ll_google_sign_in, lLayEnglishAnswer, lLayHindiAnswer;
@@ -232,7 +224,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
 
         nav_name = header.findViewById(R.id.nav_name);
 
-        if(CommonPreference.getInstance(this).getString(CommonPreference.Key.NAME) !=null){
+        if (CommonPreference.getInstance(this).getString(CommonPreference.Key.NAME) != null) {
             nav_name.setText(CommonPreference.getInstance(this).getString(CommonPreference.Key.NAME));
         }
         lLayTvToday.setOnClickListener(this);
@@ -245,8 +237,8 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
 
         lLayMain = findViewById(R.id.lLayMain);
 
-        if(hintCount < 2){
-            initRewardAdd();
+        if (hintCount < 2) {
+            initHintInterstitialAd();
         }
         interstitialAdd();
 
@@ -254,9 +246,9 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
         mediaPlayerGameComplete = MediaPlayer.create(this, R.raw.game_complete);
         mediaPlayerWrongAnswer = MediaPlayer.create(this, R.raw.for_error_music);
 
-        if(CommonPreference.getInstance(EnglishGameActivity.this).getSoundState()){
+        if (CommonPreference.getInstance(EnglishGameActivity.this).getSoundState()) {
             mediaPlayer.start();
-        }else {
+        } else {
             mediaPlayer.stop();
         }
 
@@ -281,8 +273,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
         final AdRequest adRequest = adReq.build();
         adView.loadAd(adRequest);
 
-        animBlink = AnimationUtils.loadAnimation(this,
-                R.anim.blink);
+        animBlink = AnimationUtils.loadAnimation(this, R.anim.blink);
         initViewClick();
 
         gamePresenter = new GamePresenter(this, EnglishGameActivity.this);
@@ -301,8 +292,8 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
             GetWordRequest getWordRequest = new GetWordRequest();
             getWordRequest.setUserId(CommonPreference.getInstance(this.getApplicationContext()).getString(CommonPreference.Key.GAME_USER_ID));
             getWordRequest.setLanguageId("2");
-           gamePresenter.fetchNewWord(EnglishGameActivity.this, getWordRequest);
-          //  gamePresenter.fetchEnglish();
+            gamePresenter.fetchNewWord(EnglishGameActivity.this, getWordRequest);
+            //  gamePresenter.fetchEnglish();
         }
       /*  if (!CommonPreference.getInstance(GameActivity.this).getBoolean(CommonPreference.Key.IS_FIRST_TIME)) {
             CommonPreference.getInstance(GameActivity.this).put(CommonPreference.Key.IS_FIRST_TIME, true);
@@ -313,21 +304,20 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
         llHindi = findViewById(R.id.llHindi);
         llEng = findViewById(R.id.llEng);
 
-        if(CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE)!=null &&
-                CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")){
+        if (CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE) != null && CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
 
             llHindi.setBackgroundColor(Color.parseColor("#4267B2"));
 
-           // llHindi.setBackgroundColor(Color.BLACK);
+            // llHindi.setBackgroundColor(Color.BLACK);
             llEng.setBackgroundColor(Color.WHITE);
 
             tvEng.setTextColor(Color.parseColor("#000000"));
             tvHindi.setTextColor(Color.parseColor("#FFFFFF"));
-        }else{
+        } else {
 
             llEng.setBackgroundColor(Color.parseColor("#4267B2"));
 
-           // llEng.setBackgroundColor(Color.BLACK);
+            // llEng.setBackgroundColor(Color.BLACK);
             llHindi.setBackgroundColor(Color.WHITE);
 
             tvHindi.setTextColor(Color.parseColor("#000000"));
@@ -339,16 +329,15 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
             public void onClick(View v) {
                 CleverTapEvent.getCleverTapEvents(EnglishGameActivity.this).createOnlyEvent(CleverTapEventConstants.BUTTON_ENGLISH);
 
-                if(CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE)!=null &&
-                        CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("english")) {
+                if (CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE) != null && CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("english")) {
                     llEng.setClickable(false);
-                }else{
+                } else {
 
                     GameDataManager.getInstance().getDataList().clear();
 
                     llEng.setBackgroundColor(Color.parseColor("#4267B2"));
 
-                  //  llEng.setBackgroundColor(Color.BLACK);
+                    //  llEng.setBackgroundColor(Color.BLACK);
                     llHindi.setBackgroundColor(Color.WHITE);
 
                     tvHindi.setTextColor(Color.parseColor("#000000"));
@@ -356,8 +345,8 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
 
 
                     ShabdamLanguagePreference.getInstance(EnglishGameActivity.this).setLanguage("");
-                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE,CommonPreference.Key.ENGLISH);
-                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE,CommonPreference.Key.ENGLISH);
+                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE, CommonPreference.Key.ENGLISH);
+                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE, CommonPreference.Key.ENGLISH);
 
                     Intent intent = new Intent(EnglishGameActivity.this, EnglishGameActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -373,10 +362,9 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
             public void onClick(View v) {
                 CleverTapEvent.getCleverTapEvents(EnglishGameActivity.this).createOnlyEvent(CleverTapEventConstants.BUTTON_HINDI);
 
-                if(CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE)!=null &&
-                        CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
+                if (CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE) != null && CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
                     llHindi.setClickable(false);
-                }else{
+                } else {
 
                     GameDataManager.getInstance().getDataList().clear();
 
@@ -387,8 +375,8 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                     tvHindi.setTextColor(Color.parseColor("#FFFFFF"));
 
                     ShabdamLanguagePreference.getInstance(EnglishGameActivity.this).setLanguage("hi");
-                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE,CommonPreference.Key.HINDI);
-                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE,CommonPreference.Key.HINDI);
+                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE, CommonPreference.Key.HINDI);
+                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE, CommonPreference.Key.HINDI);
 
                     Intent intent = new Intent(EnglishGameActivity.this, GameActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -401,109 +389,66 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
 
     }
 
-    private void  initAnimation(){
+    private void initAnimation() {
 
-        flipOutAnimatorSet =
-                (AnimatorSet) AnimatorInflater.loadAnimator(
-                        EnglishGameActivity.this,
-                        R.animator.flip_out
-                );
+        flipOutAnimatorSet = (AnimatorSet) AnimatorInflater.loadAnimator(EnglishGameActivity.this, R.animator.flip_out);
 
-        flipInAnimatorSet =
-                (AnimatorSet) AnimatorInflater.loadAnimator(
-                        EnglishGameActivity.this,
-                        R.animator.flip_in
-                );
+        flipInAnimatorSet = (AnimatorSet) AnimatorInflater.loadAnimator(EnglishGameActivity.this, R.animator.flip_in);
 
-        flipOutAnimatorSet2 =
-                (AnimatorSet) AnimatorInflater.loadAnimator(
-                        EnglishGameActivity.this,
-                        R.animator.flip_out
-                );
+        flipOutAnimatorSet2 = (AnimatorSet) AnimatorInflater.loadAnimator(EnglishGameActivity.this, R.animator.flip_out);
 
-        flipInAnimatorSet2 =
-                (AnimatorSet) AnimatorInflater.loadAnimator(
-                        EnglishGameActivity.this,
-                        R.animator.flip_in
-                );
+        flipInAnimatorSet2 = (AnimatorSet) AnimatorInflater.loadAnimator(EnglishGameActivity.this, R.animator.flip_in);
 
-        flipOutAnimatorSet3 =
-                (AnimatorSet) AnimatorInflater.loadAnimator(
-                        EnglishGameActivity.this,
-                        R.animator.flip_out
-                );
+        flipOutAnimatorSet3 = (AnimatorSet) AnimatorInflater.loadAnimator(EnglishGameActivity.this, R.animator.flip_out);
 
-        flipInAnimatorSet3 =
-                (AnimatorSet) AnimatorInflater.loadAnimator(
-                        EnglishGameActivity.this,
-                        R.animator.flip_in
-                );
+        flipInAnimatorSet3 = (AnimatorSet) AnimatorInflater.loadAnimator(EnglishGameActivity.this, R.animator.flip_in);
 
-        flipOutAnimatorSet4 =
-                (AnimatorSet) AnimatorInflater.loadAnimator(
-                        EnglishGameActivity.this,
-                        R.animator.flip_out
-                );
+        flipOutAnimatorSet4 = (AnimatorSet) AnimatorInflater.loadAnimator(EnglishGameActivity.this, R.animator.flip_out);
 
-        flipInAnimatorSet4 =
-                (AnimatorSet) AnimatorInflater.loadAnimator(
-                        EnglishGameActivity.this,
-                        R.animator.flip_in
-                );
+        flipInAnimatorSet4 = (AnimatorSet) AnimatorInflater.loadAnimator(EnglishGameActivity.this, R.animator.flip_in);
 
-        flipOutAnimatorSet5 =
-                (AnimatorSet) AnimatorInflater.loadAnimator(
-                        EnglishGameActivity.this,
-                        R.animator.flip_out
-                );
+        flipOutAnimatorSet5 = (AnimatorSet) AnimatorInflater.loadAnimator(EnglishGameActivity.this, R.animator.flip_out);
 
-        flipInAnimatorSet5 =
-                (AnimatorSet) AnimatorInflater.loadAnimator(
-                        EnglishGameActivity.this,
-                        R.animator.flip_in
-                );
+        flipInAnimatorSet5 = (AnimatorSet) AnimatorInflater.loadAnimator(EnglishGameActivity.this, R.animator.flip_in);
     }
 
 
     private void googleSignIn() {
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
     }
 
-   /* @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    /* @Override
+     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+         super.onActivityResult(requestCode, resultCode, data);
 
-        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
-        if (requestCode == RC_SIGN_IN) {
-            // The Task returned from this call is always completed, no need to attach
-            // a listener.
-            com.google.android.gms.tasks.Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            handleSignInResult(task);
-        }
-    }*/
-   private void openDrawer(){
-       drawerLayout.openDrawer(GravityCompat.START);
-   }
+         // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
+         if (requestCode == RC_SIGN_IN) {
+             // The Task returned from this call is always completed, no need to attach
+             // a listener.
+             com.google.android.gms.tasks.Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+             handleSignInResult(task);
+         }
+     }*/
+    private void openDrawer() {
+        drawerLayout.openDrawer(GravityCompat.START);
+    }
 
-    private void closeDrawer(){
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)){
+    private void closeDrawer() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
         }
 
     }
 
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == UPDATE_REQUEST_CODE){
-            if(requestCode != RESULT_OK){
+        if (requestCode == UPDATE_REQUEST_CODE) {
+            if (requestCode != RESULT_OK) {
                 finish();
             }
         }
@@ -546,7 +491,6 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
     }
 
 
-
     @Override
     public void onAddUser(com.tvtoday.gamelibrary.shabdamgamesdk.model.adduser.Data data) {
         if (data != null) {
@@ -570,24 +514,23 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
         });*/
 
         AdRequest adRequest = new AdRequest.Builder().build();
-        InterstitialAd.load(this, CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_INTERTETIAL_APP_ID), adRequest,
-                new InterstitialAdLoadCallback() {
-                    @Override
-                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
-                        // The mInterstitialAd reference will be null until
-                        // an ad is loaded.
-                        mInterstitialAd = interstitialAd;
-                        //Log.i(TAG, "onAdLoaded");
-                        // loadAdd();
-                    }
+        InterstitialAd.load(this, CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_INTERTETIAL_APP_ID), adRequest, new InterstitialAdLoadCallback() {
+            @Override
+            public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                // The mInterstitialAd reference will be null until
+                // an ad is loaded.
+                mInterstitialAd = interstitialAd;
+                //Log.i(TAG, "onAdLoaded");
+                // loadAdd();
+            }
 
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                        // Handle the error
-                        //Log.i(TAG, loadAdError.getMessage());
-                        mInterstitialAd = null;
-                    }
-                });
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                // Handle the error
+                //Log.i(TAG, loadAdError.getMessage());
+                mInterstitialAd = null;
+            }
+        });
     }
 
     private void loadAdd() {
@@ -629,9 +572,9 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                 openUttarDekho();
             }
             Toast.makeText(this, "Ad did not load", Toast.LENGTH_SHORT).show();
-           if(rl_uttar_dekho_btn != null){
-               rl_uttar_dekho_btn.setEnabled(true);
-           }
+            if (rl_uttar_dekho_btn != null) {
+                rl_uttar_dekho_btn.setEnabled(true);
+            }
 
         }
     }
@@ -668,97 +611,72 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
         finish();
     }
 
-    private void initRewardAdd() {
+    private void initHintInterstitialAd() {
         AdRequest adRequest = new AdRequest.Builder().build();
+        String adId = CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_INTERTETIAL_APP_ID);
 
-        RewardedAd.load(this, CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_REWARDED_APP_ID),
-                adRequest, new RewardedAdLoadCallback() {
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                        // Handle the error.
-                        // Log.d(TAG, loadAdError.getMessage());
-                       // Toast.makeText(this,)
-                        mRewardedAd = null;
-                        //initRewardAdd();
+        InterstitialAd.load(this, adId, adRequest, new InterstitialAdLoadCallback() {
+
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                hintInterstitialAd = null;
+                super.onAdFailedToLoad(loadAdError);
+            }
+
+            @Override
+            public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                hintInterstitialAd = interstitialAd;
+                rl_hint.setVisibility(View.VISIBLE);
+
+
+                if (currentAttempt < 4) {
+                    if (hintCount < 1) {
+                        rl_hint.setBackgroundResource(R.drawable.bg_hint);
+                        rl_hint.setClickable(true);
+                    } else {
+                        rl_hint.setBackgroundResource(R.drawable.bg_hint_gray);
+                        rl_hint.setClickable(false);
                     }
-
-                    @Override
-                    public void onAdLoaded(@NonNull RewardedAd rewardedAd) {
-                        mRewardedAd = rewardedAd;
-                        rl_hint.setVisibility(View.VISIBLE);
-                        if(currentAttempt < 4){
-                            if(hintCount < 1){
-                                rl_hint.setBackgroundResource(R.drawable.bg_hint);
-                                rl_hint.setClickable(true);
-                            }else {
-                                rl_hint.setBackgroundResource(R.drawable.bg_hint_gray);
-                                rl_hint.setClickable(false);
-                            }
-                        }else {
-                            if(hintCount < 2){
-                                rl_hint.setBackgroundResource(R.drawable.bg_hint);
-                                rl_hint.setClickable(true);
-                            }else {
-                                rl_hint.setBackgroundResource(R.drawable.bg_hint_gray);
-                                rl_hint.setClickable(false);
-                            }
-                        }
-
-
+                } else {
+                    if (hintCount < 2) {
+                        rl_hint.setBackgroundResource(R.drawable.bg_hint);
+                        rl_hint.setClickable(true);
+                    } else {
+                        rl_hint.setBackgroundResource(R.drawable.bg_hint_gray);
+                        rl_hint.setClickable(false);
                     }
-                });
+                }
+
+                super.onAdLoaded(interstitialAd);
+            }
+        });
+
     }
 
-    private void showRewardAdd() {
-        if (mRewardedAd != null) {
-            mRewardedAd.show(this, new OnUserEarnedRewardListener() {
-                @Override
-                public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
-                    // Handle the reward.
-                    //  Log.d(TAG, "The user earned the reward.");
-                    int rewardAmount = rewardItem.getAmount();
-                    String rewardTpype = rewardItem.getType();
-                    showHint();
-                    if(hintCount < 2){
-                        initRewardAdd();
-                    }
-                }
-            });
-            mRewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
-                @Override
-                public void onAdShowedFullScreenContent() {
+    private void showHintInterstitialAds() {
+        if (hintInterstitialAd != null) {
 
-                    // Called when ad is shown.
-                    // Log.d(TAG, "Ad was shown.");
-                }
-
-                @Override
-                public void onAdFailedToShowFullScreenContent(AdError adError) {
-                    // Called when ad fails to show.
-                    // Log.d(TAG, "Ad failed to show.");
-                    showHint();
-                    if(hintCount < 2){
-                        initRewardAdd();
-                    }
-                }
-
+            hintInterstitialAd.show(this);
+            FullScreenContentCallback callback = new FullScreenContentCallback() {
                 @Override
                 public void onAdDismissedFullScreenContent() {
-                    // Called when ad is dismissed.
-                    // Set the ad reference to null so you don't show the ad a second time.
-                    // Log.d(TAG, "Ad was dismissed.");
-                    mRewardedAd = null;
-                    if(hintCount < 2){
-                        initRewardAdd();
-                    }
+
+                    hintInterstitialAd = null;
+                    initHintInterstitialAd();
+                    showHint();
+                    super.onAdDismissedFullScreenContent();
                 }
-            });
+
+                @Override
+                public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                    showHint();
+                    initHintInterstitialAd();
+                    super.onAdFailedToShowFullScreenContent(adError);
+                }
+            };
+            hintInterstitialAd.setFullScreenContentCallback(callback);
         } else {
-            // Log.d(TAG, "The rewarded ad wasn't ready yet.");
-           // showHint();
-            if(hintCount < 2){
-                initRewardAdd();
-            }
+            initHintInterstitialAd();
         }
     }
 
@@ -770,7 +688,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                 if ((SystemClock.elapsedRealtime() - tv_timer_text.getBase() >= 3600000)) {
                     tv_timer_text.setBase(SystemClock.elapsedRealtime());
 
-                    endGame(Constants.LOSS, String.valueOf(3600000 / 1000), currentAttempt,"2");
+                    endGame(Constants.LOSS, String.valueOf(3600000 / 1000), currentAttempt, "2");
 
                     Toast.makeText(EnglishGameActivity.this, "Game Finished!", Toast.LENGTH_SHORT).show();
                 }
@@ -792,9 +710,9 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
             submitGameRequest.setApp_id(CommonPreference.getInstance(EnglishGameActivity.this.getApplicationContext()).getString(CommonPreference.Key.SHABDAM_APP_ID));
             gamePresenter.submitGame(submitGameRequest);
         } else {
-            if(CommonPreference.getInstance(EnglishGameActivity.this).getSoundState()){
+            if (CommonPreference.getInstance(EnglishGameActivity.this).getSoundState()) {
                 mediaPlayerGameComplete.start();
-            }else {
+            } else {
                 mediaPlayerGameComplete.pause();
             }
             GameDataManager.getInstance().removeData();
@@ -824,14 +742,14 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onResume() {
         super.onResume();
-        if(!CommonPreference.getInstance(EnglishGameActivity.this).getSoundState()){
+        if (!CommonPreference.getInstance(EnglishGameActivity.this).getSoundState()) {
             mediaPlayer.pause();
             mediaPlayerGameComplete.pause();
             mediaPlayerWrongAnswer.pause();
         }
-        if(CommonPreference.getInstance(EnglishGameActivity.this).getSoundState()){
+        if (CommonPreference.getInstance(EnglishGameActivity.this).getSoundState()) {
             mediaPlayer.start();
-        }else {
+        } else {
             mediaPlayer.pause();
         }
 
@@ -914,7 +832,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
     @Override
     public void onClick(View view) {
         int id = view.getId();
-        if (id == R.id.tv_Q || id == R.id.tv_W || id == R.id.tv_E || id == R.id.tv_R || id == R.id.tv_T || id == R.id.tv_Y || id == R.id.tv_U || id == R.id.tv_I || id == R.id.tv_O || id == R.id.tv_P || id == R.id.tv_A || id == R.id.tv_S || id == R.id.tv_D || id == R.id.tv_F || id == R.id.tv_G || id == R.id.tv_H || id == R.id.tv_J || id == R.id.tv_K || id == R.id.tv_L || id == R.id.tv_Z || id == R.id.tv_X || id == R.id.tv_C || id == R.id.tv_V || id == R.id.tv_B || id == R.id.tv_N || id == R.id.tv_M ) {
+        if (id == R.id.tv_Q || id == R.id.tv_W || id == R.id.tv_E || id == R.id.tv_R || id == R.id.tv_T || id == R.id.tv_Y || id == R.id.tv_U || id == R.id.tv_I || id == R.id.tv_O || id == R.id.tv_P || id == R.id.tv_A || id == R.id.tv_S || id == R.id.tv_D || id == R.id.tv_F || id == R.id.tv_G || id == R.id.tv_H || id == R.id.tv_J || id == R.id.tv_K || id == R.id.tv_L || id == R.id.tv_Z || id == R.id.tv_X || id == R.id.tv_C || id == R.id.tv_V || id == R.id.tv_B || id == R.id.tv_N || id == R.id.tv_M) {
             if (index < currentAttempt * 5) {
                 btnIdList.add(view.getId());
             }
@@ -937,7 +855,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
         } else if (id == R.id.rl_uttar_dekho_btn) {
             CleverTapEvent.getCleverTapEvents(EnglishGameActivity.this).createOnlyEvent(CleverTapEventConstants.UTTAR_DEKHO);
             click_item = CLICK_ITEM.UTTAR_DEKHO;
-            if(rl_uttar_dekho_btn != null){
+            if (rl_uttar_dekho_btn != null) {
                 rl_uttar_dekho_btn.setEnabled(false);
             }
             if (!TextUtils.isEmpty(correctWord)) {
@@ -948,32 +866,31 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                     statisticsPopup(null);
                 } else {
                     isUttarDekheClicked = true;
-                    endGame(Constants.LOSS, String.valueOf(pauseOffset / 1000), currentAttempt,"2");
+                    endGame(Constants.LOSS, String.valueOf(pauseOffset / 1000), currentAttempt, "2");
                 }
             }
         } else if (id == R.id.iv_question_mark_btn) {
             CleverTapEvent.getCleverTapEvents(EnglishGameActivity.this).createOnlyEvent(CleverTapEventConstants.QUESTION_MARK);
             kaiseKhelePopup();
-        }
-        else if(id == R.id.ivHome){
+        } else if (id == R.id.ivHome) {
             String activityToStart = "com.tvtoday.gamelibrary.core.views.activity.homePage.HomeActivity";
             try {
                 Class<?> c = Class.forName(activityToStart);
                 Intent intent = new Intent(this, c);
-                intent.putExtra("called_game_id",1);
+                intent.putExtra("called_game_id", 1);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
             } catch (ClassNotFoundException ignored) {
             }
 
-        }else if (id == R.id.iv_trophy_btn) {
+        } else if (id == R.id.iv_trophy_btn) {
             CleverTapEvent.getCleverTapEvents(EnglishGameActivity.this).createOnlyEvent(CleverTapEventConstants.LEADERBOARD_ICON);
             startActivity(new Intent(this, ShabdamLeaderBoardActivity.class));
             //finish();
             //onBackPressed();
-        }else if(id == R.id.iv_LangChange) {
-          //  openLanguageBottomSheet();
+        } else if (id == R.id.iv_LangChange) {
+            //  openLanguageBottomSheet();
           /*  String activityToStart = "com.tvtoday.gamelibrary.core.views.activity.languageSelection.LanguageSelectionActivity";
             try {
                 Class<?> c = Class.forName(activityToStart);
@@ -983,8 +900,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
 
             } catch (ClassNotFoundException ignored) {
             }*/
-        }
-        else if (id == R.id.iv_statistics_btn) {
+        } else if (id == R.id.iv_statistics_btn) {
             CleverTapEvent.getCleverTapEvents(EnglishGameActivity.this).createOnlyEvent(CleverTapEventConstants.STATISTICS_ICON);
             if (!TextUtils.isEmpty(CommonPreference.getInstance(EnglishGameActivity.this.getApplicationContext()).getString(CommonPreference.Key.GAME_USER_ID))) {
                 callgetStreakAPI();
@@ -992,9 +908,9 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                 statisticsPopup(null);
             }
         } else if (id == R.id.iv_settings_btn) {
-         //   startActivityForResult(new Intent(this, ShabdamSettingsActivity.class), 200);
-        Intent intent = new Intent(this, ShabdamSettingsActivity.class);
-        someActivityResultLauncher.launch(intent);
+            //   startActivityForResult(new Intent(this, ShabdamSettingsActivity.class), 200);
+            Intent intent = new Intent(this, ShabdamSettingsActivity.class);
+            someActivityResultLauncher.launch(intent);
         } else if (id == R.id.rl_hint) {
             CleverTapEvent.getCleverTapEvents(EnglishGameActivity.this).createOnlyEvent(CleverTapEventConstants.HINT_BUTTON);
             // showHint();
@@ -1005,62 +921,61 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
             }*/
 
 
-
-            if(currentAttempt < 4){
-                if(hintCount < 1){
+            if (currentAttempt < 4) {
+                if (hintCount < 1) {
                     rl_hint.setBackgroundResource(R.drawable.bg_hint);
                     rl_hint.setClickable(true);
-                }else {
+                } else {
                     rl_hint.setBackgroundResource(R.drawable.bg_hint_gray);
                     rl_hint.setClickable(false);
                 }
-            }else {
-                if(hintCount < 1){
+            } else {
+                if (hintCount < 1) {
                     rl_hint.setBackgroundResource(R.drawable.bg_hint);
                     rl_hint.setClickable(true);
-                }else {
+                } else {
                     rl_hint.setBackgroundResource(R.drawable.bg_hint_gray);
                     rl_hint.setClickable(false);
                 }
             }
 
-            if(hintCount < 2){
+            if (hintCount < 2) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        showRewardAdd();
+                        showHintInterstitialAds();
                     }
                 });
 
                 // loadAdd();
                 click_item = CLICK_ITEM.HINT;
             }
-        }else if(id == R.id.ivHamburger) {
+        } else if (id == R.id.ivHamburger) {
             openDrawer();
-        }else if(id == R.id.lLayTerms){
+        } else if (id == R.id.lLayTerms) {
             closeDrawer();
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://docs.google.com/document/d/1efJN1iZrt9r_hd4hK8_Kct0tUsnVNptSXSm_26DcE6Q/edit?usp=sharing"));
             startActivity(browserIntent);
-        }else if(id == R.id.lLayPrivacy){
+        } else if (id == R.id.lLayPrivacy) {
             closeDrawer();
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://docs.google.com/document/d/1efJN1iZrt9r_hd4hK8_Kct0tUsnVNptSXSm_26DcE6Q/edit?usp=sharing"));
             startActivity(browserIntent);
-        }else if(id == R.id.lLaySetting){
+        } else if (id == R.id.lLaySetting) {
             closeDrawer();
             Intent intent = new Intent(EnglishGameActivity.this, ShabdamSettingsActivity.class);
             startActivity(intent);
 
-        }else if(id == R.id.lLayShare){
+        } else if (id == R.id.lLayShare) {
             closeDrawer();
-            Intent intent2 = new Intent(); intent2.setAction(Intent.ACTION_SEND);
+            Intent intent2 = new Intent();
+            intent2.setAction(Intent.ACTION_SEND);
             intent2.setType("text/plain");
-            intent2.putExtra(Intent.EXTRA_TEXT, "Love playing crossword, check out the new Hindi crossword on Android https://play.google.com/store/apps/details?id=com.tvtoday.crosswordhindi" +  "\n" +
-                    "An iPhone version is also available: https://apps.apple.com/us/app/vargpaheli/id1622360590");
+            intent2.putExtra(Intent.EXTRA_TEXT, "Love playing crossword, check out the new Hindi crossword on Android https://play.google.com/store/apps/details?id=com.tvtoday.crosswordhindi" + "\n" + "An iPhone version is also available: https://apps.apple.com/us/app/vargpaheli/id1622360590");
             startActivity(Intent.createChooser(intent2, "Share via"));
 
-        }else if(id == R.id.lLayTutorial){
+        } else if (id == R.id.lLayTutorial) {
 
-        }else if(id == R.id.lLayTvToday){
+        } else if (id == R.id.lLayTvToday) {
             closeDrawer();
 
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/developer?id=TV+Today+Network"));
@@ -1068,20 +983,18 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
         }
     }
 
-    ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        // There are no request codes
-                        Intent data = result.getData();
-                        openLogin();
-                    }
-                }
-            });
+    ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            if (result.getResultCode() == Activity.RESULT_OK) {
+                // There are no request codes
+                Intent data = result.getData();
+                openLogin();
+            }
+        }
+    });
 
-    private void openLogin(){
+    private void openLogin() {
         Intent intent = new Intent(EnglishGameActivity.this, UserDetailActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.setComponent(new ComponentName(EnglishGameActivity.this, UserDetailActivity.class));
@@ -1106,21 +1019,19 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
         someActivityResultLauncherLogin.launch(signInIntent);
     }
 
-    ActivityResultLauncher<Intent> someActivityResultLauncherLogin = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        // There are no request codes
-                        Intent data = result.getData();
-                        com.google.android.gms.tasks.Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-                        handleSignInResult(task);
-                    }
-                }
-            });
+    ActivityResultLauncher<Intent> someActivityResultLauncherLogin = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            if (result.getResultCode() == Activity.RESULT_OK) {
+                // There are no request codes
+                Intent data = result.getData();
+                com.google.android.gms.tasks.Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                handleSignInResult(task);
+            }
+        }
+    });
 
-    
+
     private void statisticsPopup(Data data) {
         if (alertDialog != null) {
             alertDialog.dismiss();
@@ -1142,15 +1053,15 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
         LinearLayout llHindi = dialogView.findViewById(R.id.llHindi);
         LinearLayout llEng = dialogView.findViewById(R.id.llEng);
         TextView tvEng = dialogView.findViewById(R.id.tvEng);
-        TextView tvHindi= dialogView.findViewById(R.id.tvHindi);
+        TextView tvHindi = dialogView.findViewById(R.id.tvHindi);
 
         ImageView iv_LangChange = dialogView.findViewById(R.id.iv_LangChange);
-       iv_LangChange.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View v) {
-               openLanguageBottomSheet();
-           }
-       });
+        iv_LangChange.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openLanguageBottomSheet();
+            }
+        });
 
         tv_played = dialogView.findViewById(R.id.tv_played);
         lLayEnglishAnswer = dialogView.findViewById(R.id.lLayEnglishAnswer);
@@ -1252,8 +1163,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                     e.printStackTrace();
                 }
 
-                if (!TextUtils.isEmpty(data.getNoOfAttempts().get1())
-                        && !data.getNoOfAttempts().get1().equalsIgnoreCase("0")) {
+                if (!TextUtils.isEmpty(data.getNoOfAttempts().get1()) && !data.getNoOfAttempts().get1().equalsIgnoreCase("0")) {
                     dialogView.findViewById(R.id.rl_layout1).setVisibility(View.GONE);
                     dialogView.findViewById(R.id.rl_layout_one).setVisibility(View.VISIBLE);
                     ((TextView) dialogView.findViewById(R.id.tv_pb_1)).setText(data.getNoOfAttempts().get1());
@@ -1262,8 +1172,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                     dialogView.findViewById(R.id.rl_layout1).setVisibility(View.VISIBLE);
                 }
 
-                if (!TextUtils.isEmpty(data.getNoOfAttempts().get2())
-                        && !data.getNoOfAttempts().get2().equalsIgnoreCase("0")) {
+                if (!TextUtils.isEmpty(data.getNoOfAttempts().get2()) && !data.getNoOfAttempts().get2().equalsIgnoreCase("0")) {
                     dialogView.findViewById(R.id.rl_layout2).setVisibility(View.GONE);
                     dialogView.findViewById(R.id.rl_layout_two).setVisibility(View.VISIBLE);
                     ((TextView) dialogView.findViewById(R.id.tv_pb_2)).setText(data.getNoOfAttempts().get2());
@@ -1273,8 +1182,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                     dialogView.findViewById(R.id.rl_layout2).setVisibility(View.VISIBLE);
                 }
 
-                if (!TextUtils.isEmpty(data.getNoOfAttempts().get3())
-                        && !data.getNoOfAttempts().get3().equalsIgnoreCase("0")) {
+                if (!TextUtils.isEmpty(data.getNoOfAttempts().get3()) && !data.getNoOfAttempts().get3().equalsIgnoreCase("0")) {
                     dialogView.findViewById(R.id.rl_layout3).setVisibility(View.GONE);
                     dialogView.findViewById(R.id.rl_layout_three).setVisibility(View.VISIBLE);
                     ((TextView) dialogView.findViewById(R.id.tv_pb_3)).setText(data.getNoOfAttempts().get3());
@@ -1284,8 +1192,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                     dialogView.findViewById(R.id.rl_layout3).setVisibility(View.VISIBLE);
                 }
 
-                if (!TextUtils.isEmpty(data.getNoOfAttempts().get4())
-                        && !data.getNoOfAttempts().get4().equalsIgnoreCase("0")) {
+                if (!TextUtils.isEmpty(data.getNoOfAttempts().get4()) && !data.getNoOfAttempts().get4().equalsIgnoreCase("0")) {
                     dialogView.findViewById(R.id.rl_layout4).setVisibility(View.GONE);
                     dialogView.findViewById(R.id.rl_layout_four).setVisibility(View.VISIBLE);
                     ((TextView) dialogView.findViewById(R.id.tv_pb_4)).setText(data.getNoOfAttempts().get4());
@@ -1295,8 +1202,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                     dialogView.findViewById(R.id.rl_layout4).setVisibility(View.VISIBLE);
                 }
 
-                if (!TextUtils.isEmpty(data.getNoOfAttempts().get5())
-                        && !data.getNoOfAttempts().get5().equalsIgnoreCase("0")) {
+                if (!TextUtils.isEmpty(data.getNoOfAttempts().get5()) && !data.getNoOfAttempts().get5().equalsIgnoreCase("0")) {
                     dialogView.findViewById(R.id.rl_layout5).setVisibility(View.GONE);
                     dialogView.findViewById(R.id.rl_layout_five).setVisibility(View.VISIBLE);
                     ((TextView) dialogView.findViewById(R.id.tv_pb_5)).setText(data.getNoOfAttempts().get5());
@@ -1306,8 +1212,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                     dialogView.findViewById(R.id.rl_layout5).setVisibility(View.VISIBLE);
                 }
 
-                if (!TextUtils.isEmpty(data.getNoOfAttempts().get6())
-                        && !data.getNoOfAttempts().get6().equalsIgnoreCase("0")) {
+                if (!TextUtils.isEmpty(data.getNoOfAttempts().get6()) && !data.getNoOfAttempts().get6().equalsIgnoreCase("0")) {
                     dialogView.findViewById(R.id.rl_layout6).setVisibility(View.GONE);
                     dialogView.findViewById(R.id.rl_layout_six).setVisibility(View.VISIBLE);
                     ((TextView) dialogView.findViewById(R.id.tv_pb_6)).setText(data.getNoOfAttempts().get6());
@@ -1335,13 +1240,13 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
             TextView tv_fifth_eng = dialogView.findViewById(R.id.tv_fifth_eng);
 
             try {
-                if(!TextUtils.isEmpty(CommonPreference.getInstance(EnglishGameActivity.this).getAppLanguageString(CommonPreference.Key.SHABDAM_APP_LANGUAGE)) && CommonPreference.getInstance(EnglishGameActivity.this).getAppLanguageString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")){
+                if (!TextUtils.isEmpty(CommonPreference.getInstance(EnglishGameActivity.this).getAppLanguageString(CommonPreference.Key.SHABDAM_APP_LANGUAGE)) && CommonPreference.getInstance(EnglishGameActivity.this).getAppLanguageString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
                     lLayEnglishAnswer.setVisibility(View.GONE);
                     lLayHindiAnswer.setVisibility(View.VISIBLE);
                     tvOne.setText(new StringBuilder().append(word_array[0]));
                     tvTwo.setText(new StringBuilder().append(word_array[1]));
                     tvThree.setText(new StringBuilder().append(word_array[2]));
-                }else{
+                } else {
                     lLayEnglishAnswer.setVisibility(View.VISIBLE);
                     lLayHindiAnswer.setVisibility(View.GONE);
                     //for -----set english answer data -------------------------------
@@ -1357,20 +1262,19 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
         } else {
             dialogView.findViewById(R.id.ll_sahi_jawab).setVisibility(View.GONE);
         }
-        if(CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE)!=null &&
-                CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")){
+        if (CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE) != null && CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
 
             llHindi.setBackgroundColor(Color.parseColor("#4267B2"));
 
-           // llHindi.setBackgroundColor(Color.BLACK);
+            // llHindi.setBackgroundColor(Color.BLACK);
             llEng.setBackgroundColor(Color.WHITE);
 
             tvEng.setTextColor(Color.parseColor("#000000"));
             tvHindi.setTextColor(Color.parseColor("#FFFFFF"));
-        }else{
+        } else {
             llEng.setBackgroundColor(Color.parseColor("#4267B2"));
 
-           // llEng.setBackgroundColor(Color.BLACK);
+            // llEng.setBackgroundColor(Color.BLACK);
             llHindi.setBackgroundColor(Color.WHITE);
 
             tvHindi.setTextColor(Color.parseColor("#000000"));
@@ -1382,23 +1286,22 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
             public void onClick(View v) {
                 CleverTapEvent.getCleverTapEvents(EnglishGameActivity.this).createOnlyEvent(CleverTapEventConstants.BUTTON_HINDI);
 
-                if(CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE)!=null &&
-                        CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
+                if (CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE) != null && CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
                     llHindi.setClickable(false);
-                }else{
+                } else {
                     GameDataManager.getInstance().getDataList().clear();
 
                     llHindi.setBackgroundColor(Color.parseColor("#4267B2"));
 
-                 //   llHindi.setBackgroundColor(Color.BLACK);
+                    //   llHindi.setBackgroundColor(Color.BLACK);
                     llEng.setBackgroundColor(Color.WHITE);
 
                     tvEng.setTextColor(Color.parseColor("#000000"));
                     tvHindi.setTextColor(Color.parseColor("#FFFFFF"));
 
                     ShabdamLanguagePreference.getInstance(EnglishGameActivity.this).setLanguage("hi");
-                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE,CommonPreference.Key.HINDI);
-                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE,CommonPreference.Key.HINDI);
+                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE, CommonPreference.Key.HINDI);
+                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE, CommonPreference.Key.HINDI);
 
                     Intent intent = new Intent(EnglishGameActivity.this, GameActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -1413,15 +1316,14 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
             public void onClick(View v) {
                 CleverTapEvent.getCleverTapEvents(EnglishGameActivity.this).createOnlyEvent(CleverTapEventConstants.BUTTON_ENGLISH);
 
-                if(CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE)!=null &&
-                        CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("english")) {
+                if (CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE) != null && CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("english")) {
                     llEng.setClickable(false);
-                }else{
+                } else {
 
                     GameDataManager.getInstance().getDataList().clear();
                     llEng.setBackgroundColor(Color.parseColor("#4267B2"));
 
-                   // llEng.setBackgroundColor(Color.BLACK);
+                    // llEng.setBackgroundColor(Color.BLACK);
                     llHindi.setBackgroundColor(Color.WHITE);
 
                     tvHindi.setTextColor(Color.parseColor("#000000"));
@@ -1429,8 +1331,8 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
 
 
                     ShabdamLanguagePreference.getInstance(EnglishGameActivity.this).setLanguage("");
-                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE,CommonPreference.Key.ENGLISH);
-                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE,CommonPreference.Key.ENGLISH);
+                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE, CommonPreference.Key.ENGLISH);
+                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE, CommonPreference.Key.ENGLISH);
 
                     Intent intent = new Intent(EnglishGameActivity.this, EnglishGameActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -1447,8 +1349,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
         CharSequence format = DateFormat.format("MM-dd-yyyy_hh:mm:ss", date);
 
         try {
-            File mainDir = new File(
-                    this.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "FilShare");
+            File mainDir = new File(this.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "FilShare");
             if (!mainDir.exists()) {
                 boolean mkdir = mainDir.mkdir();
             }
@@ -1469,10 +1370,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void shareScreenShot(File imageFile) {
-        Uri uri = FileProvider.getUriForFile(
-                this,
-                CommonPreference.getInstance(EnglishGameActivity.this.getApplicationContext()).getPackageString("applicationId") + ".GameActivity.provider",
-                imageFile);
+        Uri uri = FileProvider.getUriForFile(this, CommonPreference.getInstance(EnglishGameActivity.this.getApplicationContext()).getPackageString("applicationId") + ".GameActivity.provider", imageFile);
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);
         intent.setType("image/*");
@@ -1489,7 +1387,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
     private void callgetStreakAPI() {
         String game_id = CommonPreference.getInstance(this.getApplicationContext()).getString(CommonPreference.Key.GAME_USER_ID);
         gamePresenter = new GamePresenter(this, EnglishGameActivity.this);
-        gamePresenter.fetchStatisticsData(game_id,"2");
+        gamePresenter.fetchStatisticsData(game_id, "2");
     }
 
     private void kaiseKhelePopup() {
@@ -1518,7 +1416,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
      * @param s
      */
     private void setText(String s) {
-        try{
+        try {
             if (index < currentAttempt * 5) {
                 index = index + 1;
                 if (getId(index) != 0) {
@@ -1527,7 +1425,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                     ((TextView) findViewById(getId(index))).setText(new StringBuilder().append(s).append(getTextIndex(index)));
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
     }
@@ -1559,38 +1457,38 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void submitText() {
-       try{
-           animate();
+        try {
+            animate();
 
-           handler.postDelayed(new Runnable() {
-               @Override
-               public void run() {
-                   if (index % MAX_CHAR_LENGTH == 0) {
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (index % MAX_CHAR_LENGTH == 0) {
 
-                       //verifyText--> call API --> increment count
-                       if (!verifyText()) {
-                           //Increment current Attempt Count at Last
-                           if (currentAttempt < MAX_ATTEMPT) {
-                               currentAttempt = currentAttempt + 1;
-                               updateCurrentAttempt();
-                           }
-                           //  btnIdList.clear();
-                       }
+                        //verifyText--> call API --> increment count
+                        if (!verifyText()) {
+                            //Increment current Attempt Count at Last
+                            if (currentAttempt < MAX_ATTEMPT) {
+                                currentAttempt = currentAttempt + 1;
+                                updateCurrentAttempt();
+                            }
+                            //  btnIdList.clear();
+                        }
 
 
-                       if (index == MAX_ATTEMPT * MAX_CHAR_LENGTH) {
-                           if (!Arrays.equals(word_array, entered_word_array)) {
+                        if (index == MAX_ATTEMPT * MAX_CHAR_LENGTH) {
+                            if (!Arrays.equals(word_array, entered_word_array)) {
 
-                               endGame(Constants.LOSS, String.valueOf(pauseOffset / 1000), currentAttempt,"2");
-                               //openLeaderBoardOnGameEnd();
-                           }
-                       }
-                   }
-               }
-           }, 1600);
-       }catch (Exception e){
+                                endGame(Constants.LOSS, String.valueOf(pauseOffset / 1000), currentAttempt, "2");
+                                //openLeaderBoardOnGameEnd();
+                            }
+                        }
+                    }
+                }
+            }, 1600);
+        } catch (Exception e) {
 
-       }
+        }
     }
 
     /**
@@ -1601,7 +1499,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void updateCurrentAttempt() {
-        try{
+        try {
             //Update Matra
             if (btnIdList != null) {
                 btnIdList.clear();
@@ -1618,21 +1516,19 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
             }
 
 
-
-
-            if(currentAttempt < 4){
-                if(hintCount < 1){
+            if (currentAttempt < 4) {
+                if (hintCount < 1) {
                     rl_hint.setBackgroundResource(R.drawable.bg_hint);
                     rl_hint.setClickable(true);
-                }else {
+                } else {
                     rl_hint.setBackgroundResource(R.drawable.bg_hint_gray);
                     rl_hint.setClickable(false);
                 }
-            }else {
-                if(hintCount < 2){
+            } else {
+                if (hintCount < 2) {
                     rl_hint.setBackgroundResource(R.drawable.bg_hint);
                     rl_hint.setClickable(true);
-                }else {
+                } else {
                     rl_hint.setBackgroundResource(R.drawable.bg_hint_gray);
                     rl_hint.setClickable(false);
                 }
@@ -1651,7 +1547,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                     isHintTaken=false;
                 }
             }*/
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
     }
@@ -1753,10 +1649,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
 
 
     private boolean checkLetter(char c) {
-        return ((int) c >= 2309 && (int) c <= 2324)
-                || ((int) c >= 2400 && (int) c <= 2401)|| ((int) c >= 2325 && (int) c <= 2361)
-                || ((int) c >= 2392 && (int) c <= 2399)
-                || (int) c == 2319 || (int) c == 2320 || (int) c == 2323 || (int) c == 2324;
+        return ((int) c >= 2309 && (int) c <= 2324) || ((int) c >= 2400 && (int) c <= 2401) || ((int) c >= 2325 && (int) c <= 2361) || ((int) c >= 2392 && (int) c <= 2399) || (int) c == 2319 || (int) c == 2320 || (int) c == 2323 || (int) c == 2324;
     }
 
     /**
@@ -1790,7 +1683,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                         saveID(datumCorrectWord.getId());
                     }
 
-                    endGame(Constants.WIN, String.valueOf(pauseOffset / 1000), currentAttempt,"2");
+                    endGame(Constants.WIN, String.valueOf(pauseOffset / 1000), currentAttempt, "2");
                     // save correct word id
                     //datumCorrectWord.getId()
                 }
@@ -1840,9 +1733,9 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void openLeaderBoardOnGameEnd() {
-        if(CommonPreference.getInstance(EnglishGameActivity.this).getSoundState()){
+        if (CommonPreference.getInstance(EnglishGameActivity.this).getSoundState()) {
             mediaPlayerGameComplete.start();
-        }else {
+        } else {
             mediaPlayerGameComplete.pause();
         }
         handler.postDelayed(new Runnable() {
@@ -1876,7 +1769,6 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
             //visibleView.visible()
 
 
-
             flipOutAnimatorSet.setTarget(findViewById(getId((currentAttempt - 1) * 5 + 1)));
             flipOutAnimatorSet2.setTarget(findViewById(getId((currentAttempt - 1) * 5 + 2)));
             flipOutAnimatorSet3.setTarget(findViewById(getId((currentAttempt - 1) * 5 + 3)));
@@ -1905,11 +1797,11 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                     } else if (animator == flipOutAnimatorSet2) {
                         flipInAnimatorSet2.start();
                         // flipOutAnimatorSet3.start();
-                    } else  if (animator == flipOutAnimatorSet3){
+                    } else if (animator == flipOutAnimatorSet3) {
                         flipInAnimatorSet3.start();
-                    }else  if (animator == flipOutAnimatorSet4){
+                    } else if (animator == flipOutAnimatorSet4) {
                         flipInAnimatorSet4.start();
-                    }else  {
+                    } else {
                         flipInAnimatorSet5.start();
                     }
                     /*flipInAnimatorSet.start();
@@ -1943,15 +1835,6 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
 
             flipOutAnimatorSet5.start();
             flipOutAnimatorSet5.addListener(animatorListener);
-
-
-
-
-
-
-
-
-
 
 
         } catch (Exception e) {
@@ -1999,17 +1882,17 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void onWordFetched(Datum datumCorrectWord) {
-        try{
+        try {
             this.datumCorrectWord = datumCorrectWord;
-           this.correctWord = datumCorrectWord.getWords().toString();
-           // datumCorrectWord.setWords("SLOSH");
-           // this.correctWord = datumCorrectWord.getWords().toString();
-           // this.datumCorrectWord = datumCorrectWord;
+            this.correctWord = datumCorrectWord.getWords().toString();
+            // datumCorrectWord.setWords("SLOSH");
+            // this.correctWord = datumCorrectWord.getWords().toString();
+            // this.datumCorrectWord = datumCorrectWord;
             word_array = datumCorrectWord.getWords().toCharArray();
-           // ToastUtils.show(EnglishGameActivity.this, correctWord);
+            // ToastUtils.show(EnglishGameActivity.this, correctWord);
             // showMatraText();
             updateCurrentAttempt();
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
     }
@@ -2083,8 +1966,8 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
             ((TextView) findViewById(id)).setTextColor(ContextCompat.getColor(EnglishGameActivity.this, R.color.white));
         }
 
-       // ((TextView) findViewById(getId(pos + 1))).setText(matra[1]);
-       // ((TextView) findViewById(getId(pos + 2))).setText(matra[2]);
+        // ((TextView) findViewById(getId(pos + 1))).setText(matra[1]);
+        // ((TextView) findViewById(getId(pos + 2))).setText(matra[2]);
 
         // Second Text
         entered_word_array[1] = word_array[1];
@@ -2150,10 +2033,10 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
             submitText();
         } else {
             mediaPlayerWrongAnswer.start();
-            if(CommonPreference.getInstance(EnglishGameActivity.this).getSoundState()){
+            if (CommonPreference.getInstance(EnglishGameActivity.this).getSoundState()) {
                 mediaPlayerWrongAnswer.start();
 
-            }else {
+            } else {
                 mediaPlayerWrongAnswer.pause();
             }
 
@@ -2194,27 +2077,24 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void openLanguageBottomSheet() {
-        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(
-                EnglishGameActivity.this, R.style.AppBottomSheetDialogShabdamTheme);
-        View bottomSheetView = LayoutInflater.from(getApplicationContext())
-                .inflate(R.layout.shabdam_lang_bottom_sheet_layout, null);
+        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(EnglishGameActivity.this, R.style.AppBottomSheetDialogShabdamTheme);
+        View bottomSheetView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.shabdam_lang_bottom_sheet_layout, null);
 
 
         LinearLayout lLayHindiLang = bottomSheetView.findViewById(R.id.lLayHindiLang);
         LinearLayout lLayEnglishLang = bottomSheetView.findViewById(R.id.lLayEnglishLang);
 
-        TextView tvHindiLang= bottomSheetView.findViewById(R.id.tvHindiLang);
-        TextView tvEngLang  = bottomSheetView.findViewById(R.id.tvEngLang);
+        TextView tvHindiLang = bottomSheetView.findViewById(R.id.tvHindiLang);
+        TextView tvEngLang = bottomSheetView.findViewById(R.id.tvEngLang);
         //  val lLayQuitGame: LinearLayout? = view.findViewById(R.id.lLayQuitGame)
 
-        if(CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE)!=null &&
-                CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")){
+        if (CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE) != null && CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
             lLayHindiLang.setBackgroundColor(Color.BLACK);
             lLayEnglishLang.setBackgroundColor(Color.WHITE);
 
             tvHindiLang.setTextColor(Color.parseColor("#FFFFFF"));
             tvEngLang.setTextColor(Color.parseColor("#000000"));
-        }else{
+        } else {
             lLayEnglishLang.setBackgroundColor(Color.BLACK);
             lLayHindiLang.setBackgroundColor(Color.WHITE);
 
@@ -2226,10 +2106,9 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
         lLayHindiLang.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE)!=null &&
-                        CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
-                lLayHindiLang.setClickable(false);
-                }else{
+                if (CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE) != null && CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("hindi")) {
+                    lLayHindiLang.setClickable(false);
+                } else {
                     GameDataManager.getInstance().getDataList().clear();
                     lLayHindiLang.setBackgroundColor(Color.BLACK);
                     lLayEnglishLang.setBackgroundColor(Color.WHITE);
@@ -2239,8 +2118,8 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
 
 
                     ShabdamLanguagePreference.getInstance(EnglishGameActivity.this).setLanguage("hi");
-                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE,CommonPreference.Key.HINDI);
-                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE,CommonPreference.Key.HINDI);
+                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE, CommonPreference.Key.HINDI);
+                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE, CommonPreference.Key.HINDI);
 
                     Intent intent = new Intent(EnglishGameActivity.this, GameActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -2257,10 +2136,9 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
             @Override
             public void onClick(View v) {
 
-                if(CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE)!=null &&
-                        CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("english")) {
-                lLayEnglishLang.setClickable(false);
-                }else{
+                if (CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_LANGUAGE) != null && CommonPreference.getInstance(EnglishGameActivity.this).getString(CommonPreference.Key.SHABDAM_APP_LANGUAGE).equals("english")) {
+                    lLayEnglishLang.setClickable(false);
+                } else {
                     GameDataManager.getInstance().getDataList().clear();
                     lLayEnglishLang.setBackgroundColor(Color.BLACK);
                     lLayHindiLang.setBackgroundColor(Color.WHITE);
@@ -2269,8 +2147,8 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
                     tvEngLang.setTextColor(Color.parseColor("#FFFFFF"));
 
                     ShabdamLanguagePreference.getInstance(EnglishGameActivity.this).setLanguage("");
-                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE,CommonPreference.Key.ENGLISH);
-                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE,CommonPreference.Key.ENGLISH);
+                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_LANGUAGE, CommonPreference.Key.ENGLISH);
+                    CommonPreference.getInstance(EnglishGameActivity.this).put(CommonPreference.Key.SHABDAM_APP_LANGUAGE, CommonPreference.Key.ENGLISH);
 
                     Intent intent = new Intent(EnglishGameActivity.this, EnglishGameActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -2287,19 +2165,19 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     protected void onDestroy() {
-        if(mRewardedAd !=null){
-            mRewardedAd.setFullScreenContentCallback(null);
+        if (hintInterstitialAd != null) {
+            hintInterstitialAd.setFullScreenContentCallback(null);
         }
 
-        if(mediaPlayer !=null){
+        if (mediaPlayer != null) {
             mediaPlayer.stop();
         }
 
-        if(mediaPlayerWrongAnswer !=null){
+        if (mediaPlayerWrongAnswer != null) {
             mediaPlayerWrongAnswer.stop();
         }
 
-        if(mediaPlayerGameComplete !=null){
+        if (mediaPlayerGameComplete != null) {
             mediaPlayerGameComplete.stop();
         }
 
@@ -2312,7 +2190,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
         handler = null;
         alertDialog = null;
         keyIdArray = null;
-     //   matra = null;
+        //   matra = null;
         btnIdList = null;
         entered_word_array = null;
         datumCorrectWord = null;
@@ -2321,7 +2199,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
         gamePresenter = null;
         mGoogleSignInClient = null;
         adRequest = null;
-        mRewardedAd = null;
+        hintInterstitialAd = null;
         shakeAnimation = null;
         super.onDestroy();
     }
@@ -2330,7 +2208,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
     public void onGameSubmit() {
         if (isUttarDekheClicked) {
             isUttarDekheClicked = false;
-            if(rl_uttar_dekho_btn != null){
+            if (rl_uttar_dekho_btn != null) {
                 rl_uttar_dekho_btn.setEnabled(false);
             }
 
@@ -2347,8 +2225,8 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
 
     private void shakeAnimation() {
 
-            shakeAnimation = AnimationUtils.loadAnimation(EnglishGameActivity.this, R.anim.shake);
-            getGrid().setAnimation(shakeAnimation);
+        shakeAnimation = AnimationUtils.loadAnimation(EnglishGameActivity.this, R.anim.shake);
+        getGrid().setAnimation(shakeAnimation);
 
     }
 
@@ -2366,8 +2244,7 @@ public class EnglishGameActivity extends AppCompatActivity implements View.OnCli
             return findViewById(R.id.ll_grid_four);
         } else if (currentAttempt == 5) {
             return findViewById(R.id.ll_grid_five);
-        }
-        else if (currentAttempt == 6) {
+        } else if (currentAttempt == 6) {
             return findViewById(R.id.ll_grid_six);
         }
 

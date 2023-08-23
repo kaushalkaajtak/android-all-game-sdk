@@ -5,7 +5,7 @@ import android.os.Bundle
 import com.tvtoday.gamelibrary.R
 import com.tvtoday.gamelibrary.core.views.activity.splashActivity.SplashActivityMerger
 
-class MainGameActivity : AppCompatActivity() {
+class StageGameActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)

@@ -45,9 +45,15 @@ class SplashActivityMerger : AppCompatActivity() {
     private var handler = Handler(Looper.getMainLooper())
 
     companion object{
-        fun startGameStart(applicationPackage:String, gameAppId: String,
-                           rewardAdsIdentifier: String, interstitialAdsIdentifier: String,
-                           bannerAdsIdentifier: String, context: Context
+        fun startGameStart(applicationPackage:String,
+                           gameAppId: String,
+                           rewardAdsIdentifier: String,
+                           interstitialAdsIdentifier: String,
+                           bannerAdsIdentifier: String,
+                           gameStartInterstitialAd: String,
+                           hintInterstitialAd:String,
+                           gameEndInterstitialAd:String,
+                           context: Context
         ){
             val intent = Intent(context, SplashActivityMerger::class.java)
             intent.putExtra("applicationPackage", applicationPackage)

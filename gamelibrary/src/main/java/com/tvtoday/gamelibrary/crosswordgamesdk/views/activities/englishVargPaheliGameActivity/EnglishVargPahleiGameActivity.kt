@@ -72,85 +72,88 @@ import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickListener{
+class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickListener {
 
-    private var mRewardedAd: RewardedAd? = null
-    lateinit var mAdView : AdView
-    private var mediaPlayer : MediaPlayer? = null
-    private var mediaPlayerError : MediaPlayer? = null
-    private var mediaPlayerCorrectWord : MediaPlayer? = null
-    private var mediaPlayerGameComplete : MediaPlayer? = null
+    private var hintInterstitialAd: InterstitialAd? = null
+    lateinit var mAdView: AdView
+    private var mediaPlayer: MediaPlayer? = null
+    private var mediaPlayerError: MediaPlayer? = null
+    private var mediaPlayerCorrectWord: MediaPlayer? = null
+    private var mediaPlayerGameComplete: MediaPlayer? = null
 
     //api services-------------------------------------------------------
 
     private val compositeDisposable = CompositeDisposable()
     private val apiService: ApiService? = RetrofitClient.getInstance()
+
     //linearLayout ------------------------------------------------------
     private var lLayNextQuestion: LinearLayout? = null
     private var lLayPreviousQuestion: LinearLayout? = null
-    private var rl_hint: LinearLayout?=null
-    private var lLayBackBtn : LinearLayout? =null
-    private var lLayQuestionBtn : LinearLayout?=null
-    private var lLayShowAnswer : LinearLayout?=null
-    private var lLayProgressBar : LinearLayout?=null
+    private var rl_hint: LinearLayout? = null
+    private var lLayBackBtn: LinearLayout? = null
+    private var lLayQuestionBtn: LinearLayout? = null
+    private var lLayShowAnswer: LinearLayout? = null
+    private var lLayProgressBar: LinearLayout? = null
 
     private var mInterstitialAd: InterstitialAd? = null
     private var cursorIndex: Int = 0
 
-    private var isHintPressed  = false
+    private var isHintPressed = false
 
     //addView
-    private var adView: AdView?=null
+    private var adView: AdView? = null
 
     //navigation Drawer
     private lateinit var my_drawer_layout: DrawerLayout
     private lateinit var actionBarToggle: ActionBarDrawerToggle
     private lateinit var navView: NavigationView
 
-    private var rvNavDrawer: RecyclerView?=null
+    private var rvNavDrawer: RecyclerView? = null
 
     //imageView-----------------------------
-    private var ivNext: ImageView?=null
-    private var ivBack: ImageView?=null
-    private var ivHamburger: ImageView?=null
-    private var ivHomeBtn: ImageView?=null
-    private var ivChangeLanguage: ImageView?=null
+    private var ivNext: ImageView? = null
+    private var ivBack: ImageView? = null
+    private var ivHamburger: ImageView? = null
+    private var ivHomeBtn: ImageView? = null
+    private var ivChangeLanguage: ImageView? = null
 
-    private var ivSettingGame : ImageView?=null
+    private var ivSettingGame: ImageView? = null
 
-    private var ivLeaderBoard : ImageView?=null
+    private var ivLeaderBoard: ImageView? = null
 
-    private var ivUserName: TextView?=null
+    private var ivUserName: TextView? = null
 
-    private var date_for_puzzle :String=""
+    private var date_for_puzzle: String = ""
 
     //answer Array
     var gson = Gson()
     var questionIndex = 0
 
-    var playModel : CrosswordPlayItem? =null
-    var clicked_Item : ClickedItem?=null
+    var playModel: CrosswordPlayItem? = null
+    var clicked_Item: ClickedItem? = null
 
     //arrayList
     private var crosswordPlayItem: java.util.ArrayList<CrosswordPlayItem> = java.util.ArrayList()
     private var crossWordBoardItem: java.util.ArrayList<CorsswordBoradItem> = java.util.ArrayList()
 
     //strings
+    //strings
     private var minute: String? = ""
-    private  var second:String? = ""
+    private var second: String? = ""
     private var mTimingRunning = false
     private var pauseOffset: Long = 0
-    private  var minutes:Long = 0
-    private  var seconds:Long = 0
-    private var answerImage :String = ""
-    private var gameUserId :String = ""
-    private var mGameUsrId:String = ""
-    private var mGameEndTime : String = ""
-    private var mGameStatus:String = ""
+    private var minutes: Long = 0
+    private var seconds: Long = 0
+    private var answerImage: String = ""
+    private var gameUserId: String = ""
+    private var mGameUsrId: String = ""
+    private var mGameEndTime: String = ""
+    private var mGameStatus: String = ""
     private var hintCount = 0
+
     //textView-----------------------------
     private var question: AppCompatTextView? = null
-    private var tv_timer_text : Chronometer?=null
+    private var tv_timer_text: Chronometer? = null
 
 
     private var tvQ: TextView? = null
@@ -180,14 +183,16 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
     private var tv_N: TextView? = null
     private var tv_M: TextView? = null
 
-    private var gameDate:String?=null
+    private var gameDate: String? = null
 
-    private var vargPahleiAdapter : EnglishVargPhaeliAdapter?=null
+    private var vargPahleiAdapter: EnglishVargPhaeliAdapter? = null
 
     lateinit var gridView: GridView
 
-    private var keyArray = arrayOf("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K",
-        "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z")
+    private var keyArray = arrayOf(
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K",
+        "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
+    )
 
     private var buttonsId = intArrayOf(
         R.id.tvQ,
@@ -217,36 +222,40 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         R.id.tv_M,
     )
 
-    private var tvHindi :TextView?=null
-    private var tvEng :TextView?=null
+    private var tvHindi: TextView? = null
+    private var tvEng: TextView? = null
 
-    private var llHindi:LinearLayout?=null
-    private var llEng:LinearLayout?=null
+    private var llHindi: LinearLayout? = null
+    private var llEng: LinearLayout? = null
 
-    private var tvGameDate:TextView?=null
+    private var tvGameDate: TextView? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        try{
+        try {
             setContentView(R.layout.activity_english_varg_pahlei_game)
-        }catch (e:Exception){
+        } catch (e: Exception) {
 
         }
 
-        PrefData.setBooleanPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.IS_GUEST_USER,false)
+        PrefData.setBooleanPrefs(
+            this@EnglishVargPahleiGameActivity,
+            PrefData.Key.IS_GUEST_USER,
+            false
+        )
 
-        mediaPlayer = MediaPlayer.create(this,R.raw.peaceful_garden_healing)
-        mediaPlayerError  = MediaPlayer.create(this,R.raw.for_error_music)
-        mediaPlayerCorrectWord  = MediaPlayer.create(this,R.raw.small_applause)
-        mediaPlayerGameComplete  = MediaPlayer.create(this,R.raw.game_complete)
+        mediaPlayer = MediaPlayer.create(this, R.raw.peaceful_garden_healing)
+        mediaPlayerError = MediaPlayer.create(this, R.raw.for_error_music)
+        mediaPlayerCorrectWord = MediaPlayer.create(this, R.raw.small_applause)
+        mediaPlayerGameComplete = MediaPlayer.create(this, R.raw.game_complete)
 
         interstitialAdd()
-        initRewardAdd()
+        initHintInterstitialAds()
 
-        if(PrefData.getSoundState(this@EnglishVargPahleiGameActivity)){
+        if (PrefData.getSoundState(this@EnglishVargPahleiGameActivity)) {
             playSound()
-        }else{
+        } else {
             mediaPlayer?.pause()
         }
         /*if(PrefData.getStringMusicPrefs(this@VargPaheliGameActivity,PrefData.Key.IS_MUSIC_PLAYING) == null || PrefData.getStringMusicPrefs(this@VargPaheliGameActivity,PrefData.Key.IS_MUSIC_PLAYING).equals("1")) {
@@ -258,7 +267,7 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         }*/
 
         try {
-            date_for_puzzle =intent.getStringExtra("DATE_GAME").toString()
+            date_for_puzzle = intent.getStringExtra("DATE_GAME").toString()
             Log.e("eng_date_check", date_for_puzzle)
             initViews()
 
@@ -299,13 +308,13 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
          }*/
     }
 
-    private fun getTimeTillMidnight():Long{
+    private fun getTimeTillMidnight(): Long {
         val c: Calendar = Calendar.getInstance()
         c.set(Calendar.HOUR_OF_DAY, 0)
         c.set(Calendar.MINUTE, 0)
         c.set(Calendar.SECOND, 0)
         c.set(Calendar.MILLISECOND, 0)
-        c.add(Calendar.DATE,1)
+        c.add(Calendar.DATE, 1)
         val howMany: Long = c.getTimeInMillis() - System.currentTimeMillis()
         return howMany
     }
@@ -317,25 +326,25 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
 
     override fun onResume() {
         super.onResume()
-        if(PrefData.getSoundState(this@EnglishVargPahleiGameActivity)){
+        if (PrefData.getSoundState(this@EnglishVargPahleiGameActivity)) {
             mediaPlayer?.start()
-        }else{
+        } else {
             mediaPlayer?.pause()
         }
 
-        if(gameDate != null){
+        if (gameDate != null) {
             gameTimer()
         }
     }
 
     override fun onPause() {
         super.onPause()
-        try{
-            if(mediaPlayer?.isPlaying == true){
+        try {
+            if (mediaPlayer?.isPlaying == true) {
                 mediaPlayer?.pause()
             }
 
-            if(clicked_Item != ClickedItem.HINT){
+            if (clicked_Item != ClickedItem.HINT) {
                 if (mTimingRunning) {
                     tv_timer_text!!.stop()
                     pauseOffset = SystemClock.elapsedRealtime() - tv_timer_text!!.base
@@ -346,7 +355,7 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                     second = String.format("%02d", seconds)
                 }
             }
-        }catch (e:Exception){
+        } catch (e: Exception) {
 
         }
 
@@ -355,42 +364,66 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
 
 
     override fun onDestroy() {
-        try{
+        try {
             mediaPlayer?.stop();
             mediaPlayer?.release();
-            if(gameDate != null){
-                CommonUtils.saveGame(this,crossWordBoardItem, PrefData.Key.ENGLISH+gameDate.toString())
-                PrefData.setStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.QUESTION_NO_ENGLISH_GAME+gameDate.toString(),questionIndex.toString())
+            if (gameDate != null) {
+                CommonUtils.saveGame(
+                    this,
+                    crossWordBoardItem,
+                    PrefData.Key.ENGLISH + gameDate.toString()
+                )
+                PrefData.setStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.QUESTION_NO_ENGLISH_GAME + gameDate.toString(),
+                    questionIndex.toString()
+                )
 
-                if(tv_timer_text != null){
+                if (tv_timer_text != null) {
                     pauseOffset = SystemClock.elapsedRealtime() - tv_timer_text!!.base
-                    PrefData.setLongPrefs(applicationContext, PrefData.Key.ENGLISH+PrefData.Key.PAUSE_OFF_SET+gameDate, pauseOffset)
+                    PrefData.setLongPrefs(
+                        applicationContext,
+                        PrefData.Key.ENGLISH + PrefData.Key.PAUSE_OFF_SET + gameDate,
+                        pauseOffset
+                    )
                 }
             }
             tv_timer_text = null
             super.onDestroy()
-        }catch (e:Exception){
+        } catch (e: Exception) {
 
         }
 
     }
 
     override fun onUserLeaveHint() {
-        if(gameDate != null){
-            CommonUtils.saveGame(this,crossWordBoardItem, PrefData.Key.ENGLISH+gameDate.toString())
-            PrefData.setStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.QUESTION_NO_ENGLISH_GAME+gameDate.toString(),questionIndex.toString())
+        if (gameDate != null) {
+            CommonUtils.saveGame(
+                this,
+                crossWordBoardItem,
+                PrefData.Key.ENGLISH + gameDate.toString()
+            )
+            PrefData.setStringPrefs(
+                this@EnglishVargPahleiGameActivity,
+                PrefData.Key.QUESTION_NO_ENGLISH_GAME + gameDate.toString(),
+                questionIndex.toString()
+            )
 
-            if(tv_timer_text != null){
+            if (tv_timer_text != null) {
                 pauseOffset = SystemClock.elapsedRealtime() - tv_timer_text!!.base
-                PrefData.setLongPrefs(applicationContext, PrefData.Key.ENGLISH+PrefData.Key.PAUSE_OFF_SET+gameDate, pauseOffset)
+                PrefData.setLongPrefs(
+                    applicationContext,
+                    PrefData.Key.ENGLISH + PrefData.Key.PAUSE_OFF_SET + gameDate,
+                    pauseOffset
+                )
             }
         }
         super.onUserLeaveHint()
     }
 
 
-    fun  playSound() {
-        if(mediaPlayer != null){
+    fun playSound() {
+        if (mediaPlayer != null) {
             mediaPlayer!!.isLooping = true
             mediaPlayer!!.start()
         }
@@ -400,47 +433,77 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
     private fun getCrossWord() {
 
         val map = HashMap<String, String>()
-        var date:String? = ""
-        var userId:String? = ""
-        if(!date_for_puzzle.equals("null") && !TextUtils.isEmpty(date_for_puzzle) ){
+        var date: String? = ""
+        var userId: String? = ""
+        if (!date_for_puzzle.equals("null") && !TextUtils.isEmpty(date_for_puzzle)) {
             date = date_for_puzzle
         }
 
-        if(TextUtils.isEmpty(PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.GAME_USER_ID).toString())){
-            userId = PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.GAME_USER_ID).toString()
+        if (TextUtils.isEmpty(
+                PrefData.getStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.GAME_USER_ID
+                ).toString()
+            )
+        ) {
+            userId = PrefData.getStringPrefs(
+                this@EnglishVargPahleiGameActivity,
+                PrefData.Key.GAME_USER_ID
+            ).toString()
         }
 
-        map["game_user_id"] = PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.GAME_USER_ID).toString()
+        map["game_user_id"] =
+            PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity, PrefData.Key.GAME_USER_ID)
+                .toString()
         map["game_date"] = date.toString()
         map["lang_id"] = "2"
-        if(PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_APP_ID).toString().equals("null")){
-            map["app_id"] =""
-        }else{
-            map["app_id"] = PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_APP_ID).toString()
+        if (PrefData.getStringPrefs(
+                this@EnglishVargPahleiGameActivity,
+                PrefData.Key.CROSSWORD_APP_ID
+            ).toString().equals("null")
+        ) {
+            map["app_id"] = ""
+        } else {
+            map["app_id"] = PrefData.getStringPrefs(
+                this@EnglishVargPahleiGameActivity,
+                PrefData.Key.CROSSWORD_APP_ID
+            ).toString()
         }
-        Log.e("params",map.toString())
+        Log.e("params", map.toString())
         compositeDisposable.add(
             apiService?.getCrossWord(map)
                 ?.subscribeOn(Schedulers.io())
                 ?.observeOn(AndroidSchedulers.mainThread())
             !!.subscribe(
                     { responseModel ->
-                        try{
+                        try {
                             Log.e("Response", responseModel?.data.toString())
-                            if (responseModel?.status == "true" && responseModel.data !=null) {
+                            if (responseModel?.status == "true" && responseModel.data != null) {
 
                                 date_for_puzzle = responseModel.data.gameDate.toString()
-                                if(TextUtils.isEmpty(PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_APP_ID))) { try{
-                                    val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-                                    val formatter = SimpleDateFormat("dd-MM-yyyy")
-                                    val dateFormated = formatter.format(parser.parse(date_for_puzzle))
-                                    tvGameDate?.text = dateFormated
-                                }catch (e: ParseException){
-                                }
+                                if (TextUtils.isEmpty(
+                                        PrefData.getStringPrefs(
+                                            this@EnglishVargPahleiGameActivity,
+                                            PrefData.Key.CROSSWORD_APP_ID
+                                        )
+                                    )
+                                ) {
+                                    try {
+                                        val parser =
+                                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                                        val formatter = SimpleDateFormat("dd-MM-yyyy")
+                                        val dateFormated =
+                                            formatter.format(parser.parse(date_for_puzzle))
+                                        tvGameDate?.text = dateFormated
+                                    } catch (e: ParseException) {
+                                    }
                                 }
 
-                                if(responseModel?.data?.gameDate != null){
-                                    if(date_for_puzzle.equals("null") || TextUtils.isEmpty(date_for_puzzle) ){
+                                if (responseModel?.data?.gameDate != null) {
+                                    if (date_for_puzzle.equals("null") || TextUtils.isEmpty(
+                                            date_for_puzzle
+                                        )
+                                    ) {
 
                                         date_for_puzzle = responseModel.data.gameDate
 
@@ -462,13 +525,21 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                                     gameDate = responseModel.data.gameDate
 
 
-                                    if(PrefData.getStringPrefs(applicationContext, PrefData.Key.ENGLISH+gameDate.toString()+PrefData.Key.IS_DONE) != null){
+                                    if (PrefData.getStringPrefs(
+                                            applicationContext,
+                                            PrefData.Key.ENGLISH + gameDate.toString() + PrefData.Key.IS_DONE
+                                        ) != null
+                                    ) {
                                         val intent = Intent(this, WaitingActivity::class.java);
                                         startActivity(intent)
                                         finish()
                                     } else {
                                         lLayProgressBar?.visibility = View.GONE
-                                        pauseOffset = PrefData.getLongPrefs(applicationContext, PrefData.Key.ENGLISH+PrefData.Key.PAUSE_OFF_SET+gameDate, 0)
+                                        pauseOffset = PrefData.getLongPrefs(
+                                            applicationContext,
+                                            PrefData.Key.ENGLISH + PrefData.Key.PAUSE_OFF_SET + gameDate,
+                                            0
+                                        )
                                         startTimer()
                                         answerImage = responseModel.data.imageUrl.toString()
                                         Log.i("img:", answerImage.toString())
@@ -481,10 +552,22 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                                         Log.i("crossBoardPlayItem:", crosswordPlayItem.toString())
 
                                         //playGameSetup(crosswordPlayItem?.get(0)!!)
-                                        if(PrefData.getStringPrefs(applicationContext,PrefData.Key.ENGLISH+gameDate.toString())  != null){
+                                        if (PrefData.getStringPrefs(
+                                                applicationContext,
+                                                PrefData.Key.ENGLISH + gameDate.toString()
+                                            ) != null
+                                        ) {
                                             crossWordBoardItem.clear()
-                                            crossWordBoardItem.addAll(CommonUtils.getGame(PrefData.getStringPrefs(this,PrefData.Key.ENGLISH+gameDate.toString()).toString()))
-                                            vargPahleiAdapter = EnglishVargPhaeliAdapter(this, crossWordBoardItem)
+                                            crossWordBoardItem.addAll(
+                                                CommonUtils.getGame(
+                                                    PrefData.getStringPrefs(
+                                                        this,
+                                                        PrefData.Key.ENGLISH + gameDate.toString()
+                                                    ).toString()
+                                                )
+                                            )
+                                            vargPahleiAdapter =
+                                                EnglishVargPhaeliAdapter(this, crossWordBoardItem)
                                             gridView.adapter = vargPahleiAdapter
                                             vargPahleiAdapter!!.notifyDataSetChanged()
 
@@ -496,7 +579,8 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                                                     }
                                                 }
                                         } else {
-                                            vargPahleiAdapter = EnglishVargPhaeliAdapter(this, crossWordBoardItem)
+                                            vargPahleiAdapter =
+                                                EnglishVargPhaeliAdapter(this, crossWordBoardItem)
                                             gridView.adapter = vargPahleiAdapter
                                             vargPahleiAdapter!!.notifyDataSetChanged()
 
@@ -510,26 +594,33 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                                         }
                                         try {
                                             arrOfLtterDo()
-                                        }catch (e:Exception){
+                                        } catch (e: Exception) {
                                             e.printStackTrace()
                                         }
-                                        if( !TextUtils.isEmpty(PrefData.getStringPrefs(this, PrefData.Key.QUESTION_NO_ENGLISH_GAME+gameDate.toString()))){
-                                            questionIndex = PrefData.getStringPrefs(this, PrefData.Key.QUESTION_NO_ENGLISH_GAME+gameDate.toString())!!.toInt();
-                                            Log.e("QUESTIO_NO",questionIndex.toString())
+                                        if (!TextUtils.isEmpty(
+                                                PrefData.getStringPrefs(
+                                                    this,
+                                                    PrefData.Key.QUESTION_NO_ENGLISH_GAME + gameDate.toString()
+                                                )
+                                            )
+                                        ) {
+                                            questionIndex = PrefData.getStringPrefs(
+                                                this,
+                                                PrefData.Key.QUESTION_NO_ENGLISH_GAME + gameDate.toString()
+                                            )!!.toInt();
+                                            Log.e("QUESTIO_NO", questionIndex.toString())
                                             setQuestionOnRestart()
 
-                                        }else{
+                                        } else {
                                             playGameSetup(crosswordPlayItem.first())
                                         }
                                     }
-                                }
-                                else{
+                                } else {
                                     noCrosswordFound()
                                     //No Crossword found
                                     // Toast.makeText(this,"Crossword Not Found.", Toast.LENGTH_LONG).show()
                                 }
-                            }
-                            else if(responseModel?.status == "false"){
+                            } else if (responseModel?.status == "false") {
                                 // noCrosswordFound()
                                 val intent = Intent(this, PastPuzzleCrosswordActivity::class.java)
                                 intent.flags =
@@ -537,7 +628,7 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                                 startActivity(intent)
                                 finish()
                             }
-                        }catch (e:Exception){
+                        } catch (e: Exception) {
                             e.printStackTrace()
                         }
                     }
@@ -547,22 +638,28 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         )
     }
 
-    fun  setQuestionOnRestart(){
+    fun setQuestionOnRestart() {
         ivBack?.setColorFilter(resources.getColor(android.R.color.white), PorterDuff.Mode.SRC_IN);
         // if(questionIndex < crosswordPlayItem.size-1){
-        if(questionIndex < crosswordPlayItem.size){
+        if (questionIndex < crosswordPlayItem.size) {
             question?.text = crosswordPlayItem[questionIndex].hint.toString()
             playGameSetup(crosswordPlayItem[questionIndex])
         }
 
-        if(questionIndex == 0){
+        if (questionIndex == 0) {
             lLayPreviousQuestion?.isClickable = false
         }
 
-        if(questionIndex == crosswordPlayItem.size -1){
-            lLayNextQuestion?.isClickable  = false
-            DrawableCompat.setTint(ivNext?.drawable!!, ContextCompat.getColor(this, R.color.color_4c4c4c));
-            ivNext?.background?.setColorFilter(Color.parseColor("#4c4c4c"),PorterDuff.Mode.SRC_OVER)
+        if (questionIndex == crosswordPlayItem.size - 1) {
+            lLayNextQuestion?.isClickable = false
+            DrawableCompat.setTint(
+                ivNext?.drawable!!,
+                ContextCompat.getColor(this, R.color.color_4c4c4c)
+            );
+            ivNext?.background?.setColorFilter(
+                Color.parseColor("#4c4c4c"),
+                PorterDuff.Mode.SRC_OVER
+            )
             lLayNextQuestion?.background = ContextCompat.getDrawable(this, R.drawable.curve_radius);
         }
         vargPahleiAdapter!!.notifyDataSetChanged()
@@ -590,7 +687,6 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
     }
 
 
-
     private fun initViews() {
         gameUserId = PrefData.getStringPrefs(this, PrefData.Key.GAME_USER_ID).toString()
         Log.d("email", gameUserId)
@@ -609,14 +705,14 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         ivHamburger = findViewById(R.id.ivHamburger)
         ivHamburger?.setOnClickListener(this)
 
-        rl_hint= findViewById(R.id.rl_hint)
+        rl_hint = findViewById(R.id.rl_hint)
         rl_hint?.setOnClickListener(this)
-        tv_timer_text =findViewById(R.id.tv_timer_text)
+        tv_timer_text = findViewById(R.id.tv_timer_text)
 
-        ivChangeLanguage =findViewById(R.id.ivChangeLanguage)
+        ivChangeLanguage = findViewById(R.id.ivChangeLanguage)
         ivChangeLanguage?.setOnClickListener(this)
 
-        ivHomeBtn =findViewById(R.id.ivHomeBtn)
+        ivHomeBtn = findViewById(R.id.ivHomeBtn)
         ivHomeBtn?.setOnClickListener(this)
 
         ivNext = findViewById(R.id.ivNext)
@@ -630,7 +726,7 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         ivLeaderBoard?.setOnClickListener(this)
 
         ivUserName = findViewById(R.id.ivUserName)
-        ivUserName?.text =  PrefData.getStringPrefs(this, PrefData.Key.NAME)
+        ivUserName?.text = PrefData.getStringPrefs(this, PrefData.Key.NAME)
         //linearLayout button for back button--------------
         lLayBackBtn = findViewById(R.id.lLayBackBtn)
         lLayBackBtn?.setOnClickListener(this)
@@ -731,13 +827,16 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         gridView = findViewById(R.id.gridView)
 
 
-       /* adView = findViewById(R.id.adView)
-        adView!!.setAdSize(AdSize.BANNER)
-        val adRequest = AdRequest.Builder().build()
-        adView?.loadAd(adRequest)*/
+        /* adView = findViewById(R.id.adView)
+         adView!!.setAdSize(AdSize.BANNER)
+         val adRequest = AdRequest.Builder().build()
+         adView?.loadAd(adRequest)*/
 
         var adView = AdView(this@EnglishVargPahleiGameActivity)
-        adView.adUnitId = PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_BANNER_AD_ID)!!.toString()
+        adView.adUnitId = PrefData.getStringPrefs(
+            this@EnglishVargPahleiGameActivity,
+            PrefData.Key.CROSSWORD_BANNER_AD_ID
+        )!!.toString()
         adView.setAdSize(AdSize.BANNER)
         val adRequest = AdRequest.Builder().build()
         findViewById<LinearLayout?>(R.id.lLAyBannerAd).addView(adView)
@@ -749,8 +848,15 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         tvEng = findViewById(R.id.tvEng)
         tvHindi = findViewById(R.id.tvHindi)
 
-        if(PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_LANGAUGE)!=null &&
-            PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_APP_LANGUAGE).equals("hindi")){
+        if (PrefData.getStringPrefs(
+                this@EnglishVargPahleiGameActivity,
+                PrefData.Key.CROSSWORD_LANGAUGE
+            ) != null &&
+            PrefData.getStringPrefs(
+                this@EnglishVargPahleiGameActivity,
+                PrefData.Key.CROSSWORD_APP_LANGUAGE
+            ).equals("hindi")
+        ) {
 
             llHindi?.setBackgroundColor(Color.parseColor("#4267B2"));
             // llHindi?.setBackgroundColor(Color.BLACK)
@@ -759,7 +865,7 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
             tvEng?.setTextColor(Color.parseColor("#000000"));
             tvHindi?.setTextColor(Color.parseColor("#FFFFFF"));
 
-        }else{
+        } else {
             llEng?.setBackgroundColor(Color.parseColor("#4267B2"));
             // llEng?.setBackgroundColor(Color.BLACK)
             llHindi?.setBackgroundColor(Color.WHITE)
@@ -771,10 +877,17 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         llEng?.setOnClickListener {
             CleverTapEvent(this).createOnlyEvent(CleverTapEventConstants.BUTTON_ENGLISH)
 
-            if(PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_LANGAUGE)!=null &&
-                PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_APP_LANGUAGE).equals("english")) {
+            if (PrefData.getStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.CROSSWORD_LANGAUGE
+                ) != null &&
+                PrefData.getStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.CROSSWORD_APP_LANGUAGE
+                ).equals("english")
+            ) {
                 llEng?.isClickable = false
-            }else{
+            } else {
 
                 llEng?.setBackgroundColor(Color.parseColor("#4267B2"));
                 //  llEng?.setBackgroundColor(Color.BLACK)
@@ -785,19 +898,33 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
 
 
                 VargPaheliLanguagePreference.getInstance(baseContext).language = ""
-                PrefData.setStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_LANGAUGE,PrefData.Key.ENGLISH)
-                PrefData.setStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_APP_LANGUAGE,PrefData.Key.ENGLISH)
+                PrefData.setStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.CROSSWORD_LANGAUGE,
+                    PrefData.Key.ENGLISH
+                )
+                PrefData.setStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.CROSSWORD_APP_LANGUAGE,
+                    PrefData.Key.ENGLISH
+                )
 
-                if(!TextUtils.isEmpty(PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.GAME_USER_ID))) {
+                if (!TextUtils.isEmpty(
+                        PrefData.getStringPrefs(
+                            this@EnglishVargPahleiGameActivity,
+                            PrefData.Key.GAME_USER_ID
+                        )
+                    )
+                ) {
                     val intent = Intent(this, EnglishVargPahleiGameActivity::class.java)
-                    intent.putExtra("DATE_GAME",date_for_puzzle)
+                    intent.putExtra("DATE_GAME", date_for_puzzle)
                     intent.flags =
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
                     finish()
-                }else{
+                } else {
                     val intent = Intent(this, EnglishVargPahleiGameActivity::class.java)
-                    intent.putExtra("DATE_GAME",date_for_puzzle)
+                    intent.putExtra("DATE_GAME", date_for_puzzle)
                     intent.flags =
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
@@ -810,10 +937,17 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         llHindi?.setOnClickListener {
             CleverTapEvent(this).createOnlyEvent(CleverTapEventConstants.BUTTON_HINDI)
 
-            if(PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_LANGAUGE)!=null &&
-                PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_APP_LANGUAGE).equals("hindi")) {
+            if (PrefData.getStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.CROSSWORD_LANGAUGE
+                ) != null &&
+                PrefData.getStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.CROSSWORD_APP_LANGUAGE
+                ).equals("hindi")
+            ) {
                 llHindi?.isClickable = false
-            }else {
+            } else {
 
                 llHindi?.setBackgroundColor(Color.parseColor("#4267B2"));
                 // llHindi?.setBackgroundColor(Color.BLACK)
@@ -858,10 +992,10 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
             }
         }
 
-      /*  mAdView = findViewById(R.id.adView)
-        val adRequest = AdRequest.Builder().build()
-        mAdView.adUnitId = PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_BANNER_AD_ID)!!
-        mAdView.loadAd(adRequest)*/
+        /*  mAdView = findViewById(R.id.adView)
+          val adRequest = AdRequest.Builder().build()
+          mAdView.adUnitId = PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_BANNER_AD_ID)!!
+          mAdView.loadAd(adRequest)*/
     }
 
     private fun navDrawerSetup() {
@@ -880,7 +1014,7 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
             override fun onItemClicked(position: Int, viewType: Int, view: View) {
                 when (viewType) {
 
-                    11 ->{
+                    11 -> {
                         my_drawer_layout.closeDrawer(navView)
                     }
                 }
@@ -888,40 +1022,47 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         })
     }
 
-    private fun playGameSetup( crossWordPlayModel : CrosswordPlayItem) {
+    private fun playGameSetup(crossWordPlayModel: CrosswordPlayItem) {
 
         try {
-            playModel= crossWordPlayModel
+            playModel = crossWordPlayModel
             cursorIndex = 0
 
             vargPahleiAdapter!!.currentAnswerIndexes.clear()
-            val noOfCell :Int
-            if(crossWordPlayModel.numberOfCell!!.isNotEmpty()){
-                noOfCell =   crossWordPlayModel.numberOfCell.toInt()
-            }else{
+            val noOfCell: Int
+            if (crossWordPlayModel.numberOfCell!!.isNotEmpty()) {
+                noOfCell = crossWordPlayModel.numberOfCell.toInt()
+            } else {
                 noOfCell = 0
             }
 
-            val cellRow: Int = crossWordPlayModel.cellRow!!.toInt() ?:0
-            val cellColumn: Int = crossWordPlayModel.cellColumn!!.toInt() ?:0
+            val cellRow: Int = crossWordPlayModel.cellRow!!.toInt() ?: 0
+            val cellColumn: Int = crossWordPlayModel.cellColumn!!.toInt() ?: 0
 
             if (cellRow > 0 && cellColumn > 0) {
                 vargPahleiAdapter!!.currentCellIndex = ((cellColumn - 1) + ((cellRow - 1) * 10))
 
-                if(vargPahleiAdapter!!.currentCellIndex < crossWordBoardItem.size){
-                    if(crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex] != null
-                        && crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value == arrOfLetter[vargPahleiAdapter!!.currentCellIndex]){
-                        if(crossWordPlayModel.hintType == "across"){
-                            while (cursorIndex < playModel?.numberOfCell!!.toInt().minus(1) && crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value
-                                == arrOfLetter[vargPahleiAdapter!!.currentCellIndex]){
-                                vargPahleiAdapter!!.currentCellIndex = vargPahleiAdapter!!.currentCellIndex +1
-                                cursorIndex+=1
+                if (vargPahleiAdapter!!.currentCellIndex < crossWordBoardItem.size) {
+                    if (crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex] != null
+                        && crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value == arrOfLetter[vargPahleiAdapter!!.currentCellIndex]
+                    ) {
+                        if (crossWordPlayModel.hintType == "across") {
+                            while (cursorIndex < playModel?.numberOfCell!!.toInt()
+                                    .minus(1) && crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value
+                                == arrOfLetter[vargPahleiAdapter!!.currentCellIndex]
+                            ) {
+                                vargPahleiAdapter!!.currentCellIndex =
+                                    vargPahleiAdapter!!.currentCellIndex + 1
+                                cursorIndex += 1
                             }
-                        }else{
-                            while (cursorIndex < playModel?.numberOfCell!!.toInt().minus(1) && crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value
-                                == arrOfLetter[vargPahleiAdapter!!.currentCellIndex]){
-                                vargPahleiAdapter!!.currentCellIndex = vargPahleiAdapter!!.currentCellIndex +10
-                                cursorIndex+=1
+                        } else {
+                            while (cursorIndex < playModel?.numberOfCell!!.toInt()
+                                    .minus(1) && crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value
+                                == arrOfLetter[vargPahleiAdapter!!.currentCellIndex]
+                            ) {
+                                vargPahleiAdapter!!.currentCellIndex =
+                                    vargPahleiAdapter!!.currentCellIndex + 10
+                                cursorIndex += 1
                             }
                         }
                     }
@@ -954,9 +1095,9 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                 for (i in 0 until noOfCell) {
                     vargPahleiAdapter!!.currentAnswerIndexes.add(((cellColumn - 1) + ((cellRow - 1) * 10)) + i)
                 }
-            }else{
+            } else {
 
-                val  answer = crosswordPlayItem[questionIndex].splitDown!!
+                val answer = crosswordPlayItem[questionIndex].splitDown!!
 
                 /* val  answerList = answer.split(",").toTypedArray()
                  Log.i("answer:" , answerList.toString())
@@ -976,7 +1117,7 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                  }*/
 
                 //  Log.i("finakKeyArray2" , newArr.toString())
-                for (i in 0 until noOfCell){
+                for (i in 0 until noOfCell) {
                     vargPahleiAdapter!!.currentAnswerIndexes.add(((cellColumn - 1) + ((cellRow - 1) * 10)) + (i * 10))
                 }
             }
@@ -985,12 +1126,10 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
 
             Log.e("current_cell_index", vargPahleiAdapter!!.currentCellIndex.toString())
             Log.e("current_answer_index", vargPahleiAdapter!!.currentAnswerIndexes.toString())
-        }catch (e:Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
         }
     }
-
-
 
 
     @SuppressLint("ResourceAsColor", "Range")
@@ -1000,7 +1139,7 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
 
         when (v?.id) {
 
-            R.id.lLayShowAnswer ->{
+            R.id.lLayShowAnswer -> {
                 clicked_Item = ClickedItem.UTTAR_DEKHO
                 loadAdd()
                 CleverTapEvent(this).createOnlyEvent(CleverTapEventConstants.ASK_FRIEND)
@@ -1019,13 +1158,14 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                 //showAnswerDialog(answerImage)
                 //CommonUtils.performIntent(this@VargPaheliGameActivity, LeaderBoardActivity::class.java)
             }
-            R.id.lLayBackBtn ->{
+
+            R.id.lLayBackBtn -> {
                 removeTextOnBox()
                 CleverTapEvent(this).createOnlyEvent(CleverTapEventConstants.KEYBOARD_BACKSPACE)
             }
 
-            R.id.rl_hint ->{
-                if(!isAllDone()){
+            R.id.rl_hint -> {
+                if (!isAllDone()) {
                     clicked_Item = ClickedItem.HINT
                     // loadA
                     // setHint()
@@ -1036,31 +1176,36 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                 }
             }
 
-            R.id.lLayQuestionBtn ->{
+            R.id.lLayQuestionBtn -> {
                 CommonUtils.performIntent(this, NavDrawerTutorialActivity::class.java)
                 CleverTapEvent(this).createOnlyEvent(CleverTapEventConstants.QUESTION_MARK)
             }
 
             R.id.lLayPreviousQuestion -> {
-                if(!crosswordPlayItem.isNullOrEmpty()){
+                if (!crosswordPlayItem.isNullOrEmpty()) {
                     CleverTapEvent(this).createOnlyEvent(CleverTapEventConstants.BACK_ARROW_CLUE)
-                    if(questionIndex > 0){
+                    if (questionIndex > 0) {
                         questionIndex--
                         question?.text = crosswordPlayItem[questionIndex].hint.toString()
                         playGameSetup(crosswordPlayItem[questionIndex])
                     }
 
-                    if(questionIndex == crosswordPlayItem.indexOfFirst {
+                    if (questionIndex == crosswordPlayItem.indexOfFirst {
                             true
-                        }){
-                        lLayPreviousQuestion?.isClickable  = false
+                        }) {
+                        lLayPreviousQuestion?.isClickable = false
                         //ivBack?.setColorFilter(resources.getColor(android.R.color.black), PorterDuff.Mode.SRC_IN);
-                        lLayPreviousQuestion?.background = ContextCompat.getDrawable(this, R.drawable.curve_radius);
+                        lLayPreviousQuestion?.background =
+                            ContextCompat.getDrawable(this, R.drawable.curve_radius);
                     }
 
-                    lLayNextQuestion?.isClickable  = true
-                    ivNext?.setColorFilter(resources.getColor(android.R.color.white), PorterDuff.Mode.SRC_IN);
-                    lLayNextQuestion?.background = ContextCompat.getDrawable(this, R.drawable.silver_curve_rectangular_box_bg);
+                    lLayNextQuestion?.isClickable = true
+                    ivNext?.setColorFilter(
+                        resources.getColor(android.R.color.white),
+                        PorterDuff.Mode.SRC_IN
+                    );
+                    lLayNextQuestion?.background =
+                        ContextCompat.getDrawable(this, R.drawable.silver_curve_rectangular_box_bg);
                     // question?.text = crosswordPlayItem[questionIndex].hint.toString()
                     vargPahleiAdapter!!.notifyDataSetChanged()
                 }
@@ -1068,27 +1213,40 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
 
 
             R.id.lLayNextQuestion -> {
-                if(!crosswordPlayItem.isNullOrEmpty()){
-                    try{
+                if (!crosswordPlayItem.isNullOrEmpty()) {
+                    try {
                         CleverTapEvent(this).createOnlyEvent(CleverTapEventConstants.FORWARDARROW_CLUE)
-                        lLayPreviousQuestion?.isClickable  = true
-                        ivBack?.setColorFilter(resources.getColor(android.R.color.white), PorterDuff.Mode.SRC_IN);
-                        lLayPreviousQuestion?.background = ContextCompat.getDrawable(this, R.drawable.silver_curve_rectangular_box_bg);
-                        if(questionIndex < crosswordPlayItem.size-1){
+                        lLayPreviousQuestion?.isClickable = true
+                        ivBack?.setColorFilter(
+                            resources.getColor(android.R.color.white),
+                            PorterDuff.Mode.SRC_IN
+                        );
+                        lLayPreviousQuestion?.background = ContextCompat.getDrawable(
+                            this,
+                            R.drawable.silver_curve_rectangular_box_bg
+                        );
+                        if (questionIndex < crosswordPlayItem.size - 1) {
                             questionIndex++
                             question?.text = crosswordPlayItem[questionIndex].hint.toString()
 
                             playGameSetup(crosswordPlayItem[questionIndex])
                         }
 
-                        if(questionIndex == crosswordPlayItem.size -1){
-                            lLayNextQuestion?.isClickable  = false
-                            DrawableCompat.setTint(ivNext?.drawable!!, ContextCompat.getColor(this, R.color.color_4c4c4c));
-                            ivNext?.background?.setColorFilter(Color.parseColor("#4c4c4c"),PorterDuff.Mode.SRC_OVER)
-                            lLayNextQuestion?.background = ContextCompat.getDrawable(this, R.drawable.curve_radius);
+                        if (questionIndex == crosswordPlayItem.size - 1) {
+                            lLayNextQuestion?.isClickable = false
+                            DrawableCompat.setTint(
+                                ivNext?.drawable!!,
+                                ContextCompat.getColor(this, R.color.color_4c4c4c)
+                            );
+                            ivNext?.background?.setColorFilter(
+                                Color.parseColor("#4c4c4c"),
+                                PorterDuff.Mode.SRC_OVER
+                            )
+                            lLayNextQuestion?.background =
+                                ContextCompat.getDrawable(this, R.drawable.curve_radius);
                         }
                         vargPahleiAdapter!!.notifyDataSetChanged()
-                    }catch (e:Exception){
+                    } catch (e: Exception) {
 
                     }
                 }
@@ -1109,30 +1267,39 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
             R.id.tv_R -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_T -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_Y -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_U -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_I -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_O -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_P -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_A -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tvS -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_D -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
@@ -1152,50 +1319,60 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
             R.id.tv_J -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_K -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_L -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_Z -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_X -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_C -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_V -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_B -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_N -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
+
             R.id.tv_M -> {
                 setTextOnBox((findViewById<TextView>(v.id)).text.toString())
             }
 
-            R.id.ivHamburger ->{
+            R.id.ivHamburger -> {
                 my_drawer_layout.openDrawer(navView)
 
                 CleverTapEvent(this).createOnlyEvent(
-                    CleverTapEventConstants.HAMBUGER_MENU)
+                    CleverTapEventConstants.HAMBUGER_MENU
+                )
             }
 
-            R.id.ivLeaderBoard ->{
+            R.id.ivLeaderBoard -> {
                 val bundle = Bundle()
-                bundle.putString(IntentConstants.GAME_USER_ID_,gameUserId)
+                bundle.putString(IntentConstants.GAME_USER_ID_, gameUserId)
                 bundle.putString("GAME_DATE_FOR_LEADER_BOARD", date_for_puzzle)
-                bundle.putString("lanuageID","2")
+                bundle.putString("lanuageID", "2")
                 CommonUtils.performIntentWithBundle(this, LeaderBoardActivity::class.java, bundle)
             }
 
-            R.id.ivSettingGame ->{
+            R.id.ivSettingGame -> {
                 val intent = Intent(this, VargPaheliSettingActivity::class.java)
                 startActivity(intent)
             }
@@ -1213,7 +1390,8 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                 } catch (ignored: ClassNotFoundException) {
                 }
             }
-            R.id.ivChangeLanguage ->{
+
+            R.id.ivChangeLanguage -> {
 
                 // openLanguageBottomSheet()
             }
@@ -1242,19 +1420,21 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                 mediaPlayerCorrectWord?.pause()
             }*/
 
-            if(hintCount == 4){
+            if (hintCount == 4) {
                 hintCount = 0
 
-                loadAdd()
-            }else{
+                showHintAds()
+            } else {
                 setHint()
             }
             bottomSheetDialog.dismiss()
         }
 
-        lLayRevealWord?.setOnClickListener{
-            CleverTapEvent(this@EnglishVargPahleiGameActivity).createOnlyEvent(CleverTapEventConstants.REVEAL_WORD)
-            showRewardAdd()
+        lLayRevealWord?.setOnClickListener {
+            CleverTapEvent(this@EnglishVargPahleiGameActivity).createOnlyEvent(
+                CleverTapEventConstants.REVEAL_WORD
+            )
+            showHintAds()
             bottomSheetDialog.dismiss()
         }
 
@@ -1262,84 +1442,94 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         bottomSheetDialog.show()
     }
 
-    private fun setTextOnBox(keyVal: String){
-        try{
+    private fun setTextOnBox(keyVal: String) {
+        try {
             val keyValue = keyVal.trim()
-            if(playModel?.hintType == "across"){
-                if(vargPahleiAdapter!!.currentCellIndex < ((playModel?.cellColumn?.toInt()!!.plus(playModel?.cellRow!!.toInt().minus(1)*10).plus(playModel?.numberOfCell!!.toInt()))).minus(1)){
+            if (playModel?.hintType == "across") {
+                if (vargPahleiAdapter!!.currentCellIndex < ((playModel?.cellColumn?.toInt()!!
+                        .plus(playModel?.cellRow!!.toInt().minus(1) * 10)
+                        .plus(playModel?.numberOfCell!!.toInt()))).minus(1)
+                ) {
 
                     var isLastLetter = false
                     var isWrongAnswer = false
-                    if(crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value != arrOfLetter[vargPahleiAdapter!!.currentCellIndex]){
+                    if (crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value != arrOfLetter[vargPahleiAdapter!!.currentCellIndex]) {
                         crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value = keyValue
                     }
 
-                    if(isWordDone()){
+                    if (isWordDone()) {
                         // Toast.makeText(this, "LastCell", Toast.LENGTH_LONG ).show()
-                        var startIndex = (playModel?.cellRow!!.toInt().minus(1)*10) + playModel?.cellColumn!!.toInt().minus(1)
+                        var startIndex = (playModel?.cellRow!!.toInt()
+                            .minus(1) * 10) + playModel?.cellColumn!!.toInt().minus(1)
                         var builder = StringBuilder()
-                        for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)){
-                            builder.append(crossWordBoardItem[startIndex+i].value)
+                        for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)) {
+                            builder.append(crossWordBoardItem[startIndex + i].value)
                         }
 
-                        if(builder.toString() != playModel?.answer?.trim()){
+                        if (builder.toString() != playModel?.answer?.trim()) {
                             Log.d("fixed", "correct");
 
-                            for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)){
-                                crossWordBoardItem[startIndex+i].isWronAnswer = true
+                            for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)) {
+                                crossWordBoardItem[startIndex + i].isWronAnswer = true
                             }
 
-                            if(PrefData.getSoundState(this@EnglishVargPahleiGameActivity)){
+                            if (PrefData.getSoundState(this@EnglishVargPahleiGameActivity)) {
                                 mediaPlayerError?.start()
-                            }else{
+                            } else {
                                 mediaPlayerError?.pause()
                             }
                             showWrongAnswerDialog()
 
                             isWrongAnswer = true
 
-                        }else{
-                            if(isHintPressed){
+                        } else {
+                            if (isHintPressed) {
                                 isHintPressed = false
-                            }else{
-                                if(PrefData.getSoundState(this@EnglishVargPahleiGameActivity)){
+                            } else {
+                                if (PrefData.getSoundState(this@EnglishVargPahleiGameActivity)) {
                                     mediaPlayerCorrectWord?.start()
-                                }else{
+                                } else {
                                     mediaPlayerCorrectWord?.pause()
                                 }
                             }
-                            for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)){
-                                crossWordBoardItem[startIndex+i].isWronAnswer = false
-                                crossWordBoardItem[startIndex+i].isFreezed = true
+                            for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)) {
+                                crossWordBoardItem[startIndex + i].isWronAnswer = false
+                                crossWordBoardItem[startIndex + i].isFreezed = true
                             }
                             isLastLetter = true
                         }
                     }
 
                     vargPahleiAdapter!!.notifyDataSetChanged()
-                    vargPahleiAdapter!!.currentCellIndex = vargPahleiAdapter!!.currentCellIndex +1
+                    vargPahleiAdapter!!.currentCellIndex = vargPahleiAdapter!!.currentCellIndex + 1
 
                     cursorIndex += 1 //this is used for hint
 
-                    if(!isWrongAnswer && isLastLetter){
+                    if (!isWrongAnswer && isLastLetter) {
                         onClick(lLayNextQuestion)
                     }
 
-                    if(isWrongAnswer){//Reset Word
-                        for (i in  1..playModel!!.numberOfCell!!.toInt()){
-                            if(crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex -i].isFreezed != true){
-                                crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex -i].isWronAnswer = false
-                                crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex -i].value = ""
+                    if (isWrongAnswer) {//Reset Word
+                        for (i in 1..playModel!!.numberOfCell!!.toInt()) {
+                            if (crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex - i].isFreezed != true) {
+                                crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex - i].isWronAnswer =
+                                    false
+                                crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex - i].value =
+                                    ""
                             }
                         }
 
                         playGameSetup(playModel!!)
                     }
 
-                    if(isAllDone()){
+                    if (isAllDone()) {
                         // Toast.makeText(this,"All Done. Hurray", Toast.LENGTH_LONG).show()
                         showWinGif()
-                        PrefData.setStringPrefs(this,PrefData.Key.ENGLISH+gameDate.toString()+PrefData.Key.IS_DONE, "Done");
+                        PrefData.setStringPrefs(
+                            this,
+                            PrefData.Key.ENGLISH + gameDate.toString() + PrefData.Key.IS_DONE,
+                            "Done"
+                        );
                         pauseOffset = SystemClock.elapsedRealtime() - tv_timer_text!!.base
 
                         Handler(Looper.myLooper()!!).postDelayed(Runnable {
@@ -1348,100 +1538,110 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                         }, 2000)
                     }
                 }
-            }else{
+            } else {
                 var wordArray = playModel!!.splitDown?.split(",")
-                if(wordArray != null && cursorIndex < wordArray.size){
-                }else{
+                if (wordArray != null && cursorIndex < wordArray.size) {
+                } else {
                     return
                 }
 
-                if(vargPahleiAdapter!!.currentCellIndex < playModel?.cellRow?.toInt()!!.minus(1).plus(playModel?.numberOfCell!!.toInt())*10){
+                if (vargPahleiAdapter!!.currentCellIndex < playModel?.cellRow?.toInt()!!.minus(1)
+                        .plus(playModel?.numberOfCell!!.toInt()) * 10
+                ) {
                     var isLastLetter = false
                     var isWrongAnswer = false
-                    if(crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value != arrOfLetter[vargPahleiAdapter!!.currentCellIndex]){
+                    if (crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value != arrOfLetter[vargPahleiAdapter!!.currentCellIndex]) {
                         crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value = keyValue
-                        if(crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value == arrOfLetter[vargPahleiAdapter!!.currentCellIndex]){
-                            crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].isWronAnswer = false
+                        if (crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value == arrOfLetter[vargPahleiAdapter!!.currentCellIndex]) {
+                            crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].isWronAnswer =
+                                false
                         }
                     }
 
 
-                    if(isWordDone()){
+                    if (isWordDone()) {
                         // Toast.makeText(this, "LastCell", Toast.LENGTH_LONG ).show()
-                        var startIndex = (playModel?.cellRow!!.toInt().minus(1)*10) + playModel?.cellColumn!!.toInt().minus(1)
+                        var startIndex = (playModel?.cellRow!!.toInt()
+                            .minus(1) * 10) + playModel?.cellColumn!!.toInt().minus(1)
 
                         var builder = StringBuilder()
-                        for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)){
-                            builder.append(crossWordBoardItem[startIndex+i*10].value)
+                        for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)) {
+                            builder.append(crossWordBoardItem[startIndex + i * 10].value)
                         }
 
 
-                        if(builder.toString() != playModel?.answer?.trim()){
+                        if (builder.toString() != playModel?.answer?.trim()) {
                             Log.d("fixed", "not correct");
                             isWrongAnswer = true
 
-                            for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)){
-                                crossWordBoardItem[startIndex+i*10].isWronAnswer = true
+                            for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)) {
+                                crossWordBoardItem[startIndex + i * 10].isWronAnswer = true
                             }
-                            if(PrefData.getSoundState(this)){
+                            if (PrefData.getSoundState(this)) {
                                 mediaPlayerError?.start()
-                            }else{
+                            } else {
                                 mediaPlayerError?.pause()
                             }
                             showWrongAnswerDialog()
 
-                        }else{
+                        } else {
 
-                            if(isHintPressed){
+                            if (isHintPressed) {
                                 isHintPressed = false
-                            }else{
-                                if(PrefData.getSoundState(this@EnglishVargPahleiGameActivity)){
+                            } else {
+                                if (PrefData.getSoundState(this@EnglishVargPahleiGameActivity)) {
                                     mediaPlayerCorrectWord?.start()
-                                }else{
+                                } else {
                                     mediaPlayerCorrectWord?.pause()
                                 }
                             }
 
-                            for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)){
-                                crossWordBoardItem[startIndex+i*10].isWronAnswer = false
-                                crossWordBoardItem[startIndex+i*10].isFreezed = true
+                            for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)) {
+                                crossWordBoardItem[startIndex + i * 10].isWronAnswer = false
+                                crossWordBoardItem[startIndex + i * 10].isFreezed = true
                             }
                         }
                         isLastLetter = true
                     }
 
                     vargPahleiAdapter!!.notifyDataSetChanged()
-                    vargPahleiAdapter!!.currentCellIndex = vargPahleiAdapter!!.currentCellIndex +10
+                    vargPahleiAdapter!!.currentCellIndex = vargPahleiAdapter!!.currentCellIndex + 10
 
                     cursorIndex += 1// this is used for hit
 
-                    if(!isWrongAnswer && isLastLetter){
+                    if (!isWrongAnswer && isLastLetter) {
                         onClick(lLayNextQuestion)
                     }
 
 
-                    if(isWrongAnswer){//Reset Word
-                        for (i in  1..playModel!!.numberOfCell!!.toInt()){
-                            if(crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex -i*10].isFreezed != true){
-                                crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex -i*10].isWronAnswer = false
-                                crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex -i*10].value = ""
+                    if (isWrongAnswer) {//Reset Word
+                        for (i in 1..playModel!!.numberOfCell!!.toInt()) {
+                            if (crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex - i * 10].isFreezed != true) {
+                                crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex - i * 10].isWronAnswer =
+                                    false
+                                crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex - i * 10].value =
+                                    ""
                             }
                         }
 
                         playGameSetup(playModel!!)
                     }
 
-                    if(isAllDone()){
+                    if (isAllDone()) {
                         // Toast.makeText(this,"All Done. Hurray", Toast.LENGTH_LONG).show()
                         showWinGif()
-                        PrefData.setStringPrefs(this,PrefData.Key.ENGLISH+gameDate.toString()+PrefData.Key.IS_DONE, "Done");
+                        PrefData.setStringPrefs(
+                            this,
+                            PrefData.Key.ENGLISH + gameDate.toString() + PrefData.Key.IS_DONE,
+                            "Done"
+                        );
                         Handler(Looper.myLooper()!!).postDelayed(Runnable {
                             endGame(gameUserId, (pauseOffset / 1000).toString(), Constants.WIN)
                         }, 2000)
                     }
                 }
             }
-        }catch (e:Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
         }
     }
@@ -1460,56 +1660,65 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
     }
 
 
-    private fun removeTextOnBox(){
-        if(playModel?.hintType == "across"){
-            if(crossWordBoardItem.isNotEmpty()){
-                if(vargPahleiAdapter!!.currentCellIndex > playModel?.cellColumn?.toInt()!!.plus(playModel?.cellRow!!.toInt().minus(1)*10).minus(1)){
-                    vargPahleiAdapter!!.currentCellIndex = vargPahleiAdapter!!.currentCellIndex -1
+    private fun removeTextOnBox() {
+        if (playModel?.hintType == "across") {
+            if (crossWordBoardItem.isNotEmpty()) {
+                if (vargPahleiAdapter!!.currentCellIndex > playModel?.cellColumn?.toInt()!!
+                        .plus(playModel?.cellRow!!.toInt().minus(1) * 10).minus(1)
+                ) {
+                    vargPahleiAdapter!!.currentCellIndex = vargPahleiAdapter!!.currentCellIndex - 1
 
-                    if(crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].isFreezed == false){
+                    if (crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].isFreezed == false) {
                         crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value = ""
-                        crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].isWronAnswer = false
+                        crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].isWronAnswer =
+                            false
                     }
                     vargPahleiAdapter!!.notifyDataSetChanged()
                     cursorIndex -= 1
                 }
 
-            }else{
-                if(vargPahleiAdapter!!.currentCellIndex >=  playModel?.cellRow?.toInt()!!*10){
-                    vargPahleiAdapter!!.currentCellIndex = vargPahleiAdapter!!.currentCellIndex -10
+            } else {
+                if (vargPahleiAdapter!!.currentCellIndex >= playModel?.cellRow?.toInt()!! * 10) {
+                    vargPahleiAdapter!!.currentCellIndex = vargPahleiAdapter!!.currentCellIndex - 10
 
-                    if(crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].isFreezed == false){
+                    if (crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].isFreezed == false) {
                         crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].value = ""
-                        crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].isWronAnswer = false
+                        crossWordBoardItem[vargPahleiAdapter!!.currentCellIndex].isWronAnswer =
+                            false
                     }
 
                     vargPahleiAdapter!!.notifyDataSetChanged()
                     cursorIndex -= 1
                 }
             }
-            }
+        }
 
     }
+
     var arrOfLetter = arrayOfNulls<String>(100)
 
-    private fun arrOfLtterDo(){
-        for (i in 0..crosswordPlayItem.size.minus(1)){
-            if(crosswordPlayItem[i].hintType == "across"){
+    private fun arrOfLtterDo() {
+        for (i in 0..crosswordPlayItem.size.minus(1)) {
+            if (crosswordPlayItem[i].hintType == "across") {
                 var playIt = crosswordPlayItem[i]
                 var splitArr = playIt.splitAcross?.split(",")
                 var count = 0
                 for (j in 0..playIt.numberOfCell?.toInt()
-                !!.minus(1)){
-                    arrOfLetter[playIt.cellColumn!!.toInt().minus(1).plus(playIt.cellRow!!.toInt().minus(1)*10).plus(j)] = splitArr?.get(count).toString()
+                !!.minus(1)) {
+                    arrOfLetter[playIt.cellColumn!!.toInt().minus(1)
+                        .plus(playIt.cellRow!!.toInt().minus(1) * 10).plus(j)] =
+                        splitArr?.get(count).toString()
                     count = count.plus(1)
                 }
-            }else{
+            } else {
                 var playIt = crosswordPlayItem[i]
                 var splitArr = playIt.splitDown?.split(",")
                 var count = 0
                 for (j in 0..playIt.numberOfCell?.toInt()
-                !!.minus(1)){
-                    arrOfLetter[playIt.cellColumn!!.toInt().minus(1).plus(j*10).plus(playIt.cellRow!!.toInt().minus(1)*10)] = splitArr?.get(count).toString()
+                !!.minus(1)) {
+                    arrOfLetter[playIt.cellColumn!!.toInt().minus(1).plus(j * 10)
+                        .plus(playIt.cellRow!!.toInt().minus(1) * 10)] =
+                        splitArr?.get(count).toString()
                     count = count.plus(1)
 
                 }
@@ -1519,29 +1728,33 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
 
     }
 
-    private fun isWordDone():Boolean{
-        if(playModel != null){
-            if(playModel?.hintType == "across"){
+    private fun isWordDone(): Boolean {
+        if (playModel != null) {
+            if (playModel?.hintType == "across") {
 
-                var startIndex = (playModel?.cellRow!!.toInt().minus(1)*10) + playModel?.cellColumn!!.toInt().minus(1)
+                var startIndex =
+                    (playModel?.cellRow!!.toInt().minus(1) * 10) + playModel?.cellColumn!!.toInt()
+                        .minus(1)
                 var builder = StringBuilder()
-                for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)){
-                    if(crossWordBoardItem[startIndex+i].value.isNullOrEmpty()){
+                for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)) {
+                    if (crossWordBoardItem[startIndex + i].value.isNullOrEmpty()) {
                         return false
                     }
-                    builder.append(crossWordBoardItem[startIndex+i].value)
+                    builder.append(crossWordBoardItem[startIndex + i].value)
                 }
                 return true
 
-            }else{
-                var startIndex = (playModel?.cellRow!!.toInt().minus(1)*10) + playModel?.cellColumn!!.toInt().minus(1)
+            } else {
+                var startIndex =
+                    (playModel?.cellRow!!.toInt().minus(1) * 10) + playModel?.cellColumn!!.toInt()
+                        .minus(1)
 
                 var builder = StringBuilder()
-                for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)){
-                    if(crossWordBoardItem[startIndex+i*10].value.isNullOrEmpty()){
+                for (i in 0..playModel?.numberOfCell!!.toInt().minus(1)) {
+                    if (crossWordBoardItem[startIndex + i * 10].value.isNullOrEmpty()) {
                         return false
                     }
-                    builder.append(crossWordBoardItem[startIndex+i*10].value)
+                    builder.append(crossWordBoardItem[startIndex + i * 10].value)
                 }
                 return true
 
@@ -1551,13 +1764,13 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         return false
     }
 
-    private fun isAllDone():Boolean{
+    private fun isAllDone(): Boolean {
         var isDone = true
         var value = 0;
-        for(i in 0..99){
-            if(arrOfLetter[i] != null && arrOfLetter[i]?.trim() != crossWordBoardItem[i].value?.trim() ){
+        for (i in 0..99) {
+            if (arrOfLetter[i] != null && arrOfLetter[i]?.trim() != crossWordBoardItem[i].value?.trim()) {
                 isDone = false
-                value =i
+                value = i
                 break
             }
         }
@@ -1565,12 +1778,13 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         return isDone
     }
 
-    private fun endGame(gameUserId: String, gameEndTime:String, gameStatus: String) {
+    private fun endGame(gameUserId: String, gameEndTime: String, gameStatus: String) {
 
         CleverTapEvent(this).createOnlyEvent(CleverTapEventConstants.GAME_PLAY)
 
-        if(PrefData.getStringPrefs(applicationContext, PrefData.Key.GAME_USER_ID) != null){
-            mGameUsrId = PrefData.getStringPrefs(applicationContext, PrefData.Key.GAME_USER_ID).toString()
+        if (PrefData.getStringPrefs(applicationContext, PrefData.Key.GAME_USER_ID) != null) {
+            mGameUsrId =
+                PrefData.getStringPrefs(applicationContext, PrefData.Key.GAME_USER_ID).toString()
             mGameEndTime = gameEndTime
             mGameStatus = gameStatus
 
@@ -1579,18 +1793,36 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
             submitGameRequest.gameUserId = mGameUsrId
             submitGameRequest.time = mGameEndTime
             submitGameRequest.game_date = date_for_puzzle
-            submitGameRequest.lang_id= "2"
-            submitGameRequest.app_id = PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_APP_ID)
+            submitGameRequest.lang_id = "2"
+            submitGameRequest.app_id = PrefData.getStringPrefs(
+                this@EnglishVargPahleiGameActivity,
+                PrefData.Key.CROSSWORD_APP_ID
+            )
             Log.e("submit", submitGameRequest.toString())
-            submitGame(submitGameRequest)
-        }else{
+
+
+
+
+            var callback = {
+                submitGame(submitGameRequest)
+            }
+            showHintAds(callback)
+            loadAdd()
+
+        } else {
             val bundle = Bundle()
-            bundle.putString(IntentConstants.GAME_TIME,gameEndTime)
-            bundle.putString(IntentConstants.GAME_STATUS,Constants.WIN)
+            bundle.putString(IntentConstants.GAME_TIME, gameEndTime)
+            bundle.putString(IntentConstants.GAME_STATUS, Constants.WIN)
             bundle.putString("GAME_DATE_FOR_LEADER_BOARD", date_for_puzzle)
-            bundle.putString("lanuageID","2")
-            CommonUtils.performIntentWithBundle(this, LeaderBoardActivity::class.java, bundle)
-            finish()
+            bundle.putString("lanuageID", "2")
+
+            var callback = {
+                CommonUtils.performIntentWithBundle(this, LeaderBoardActivity::class.java, bundle)
+                finish()
+            }
+            showHintAds(callback)
+
+
         }
     }
 
@@ -1603,10 +1835,14 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                     Log.e("submitGameResponse:", response.toString())
                     if (response?.status == "true") {
                         val bundle = Bundle()
-                        bundle.putString(IntentConstants.GAME_USER_ID_,gameUserId)
+                        bundle.putString(IntentConstants.GAME_USER_ID_, gameUserId)
                         bundle.putString("GAME_DATE_FOR_LEADER_BOARD", date_for_puzzle)
-                        bundle.putString("lanuageID","2")
-                        CommonUtils.performIntentWithBundle(this, LeaderBoardActivity::class.java, bundle)
+                        bundle.putString("lanuageID", "2")
+                        CommonUtils.performIntentWithBundle(
+                            this,
+                            LeaderBoardActivity::class.java,
+                            bundle
+                        )
                         finish()
 
                         PrefData.setBooleanPrefs(this, PrefData.Key.FOR_HURREY_SCREEN, true)
@@ -1618,7 +1854,7 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
     }
 
     private fun showWrongAnswerDialog() {
-        val dialog =  Dialog(this)
+        val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setContentView(R.layout.wrong_answer_layout)
         /*dialog.findViewById<LinearLayout>(R.id.ll_dia).setOnClickListener {
@@ -1637,17 +1873,17 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
     }
 
 
-    private fun setHint(){
-        if(  playModel != null){
+    private fun setHint() {
+        if (playModel != null) {
             isHintPressed = true
-            if(playModel?.hintType == "across"){
+            if (playModel?.hintType == "across") {
                 var wordArray = playModel!!.splitAcross?.split(",")
-                if(wordArray != null && cursorIndex < wordArray.size){
+                if (wordArray != null && cursorIndex < wordArray.size) {
                     setTextOnBox(wordArray?.get(cursorIndex).toString())
                 }
-            }else{
+            } else {
                 var wordArray = playModel!!.splitDown?.split(",")
-                if(wordArray != null && cursorIndex < wordArray.size ){
+                if (wordArray != null && cursorIndex < wordArray.size) {
                     setTextOnBox(wordArray?.get(cursorIndex).toString())
                 }
             }
@@ -1665,8 +1901,10 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                     } else if (clicked_Item == ClickedItem.UTTAR_DEKHO) {
                         // CommonUtils.performIntent(this@VargPaheliGameActivity, LeaderBoardActivity::class.java)
                         askQuestionShare()
-                    }else if(clicked_Item == ClickedItem.REVEAL_LETTER){
-                        CleverTapEvent(this@EnglishVargPahleiGameActivity).createOnlyEvent(CleverTapEventConstants.REVEAL_LETTER)
+                    } else if (clicked_Item == ClickedItem.REVEAL_LETTER) {
+                        CleverTapEvent(this@EnglishVargPahleiGameActivity).createOnlyEvent(
+                            CleverTapEventConstants.REVEAL_LETTER
+                        )
                         setHint()
                     }
                     interstitialAdd()
@@ -1692,10 +1930,11 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         }
     }
 
-    private fun askQuestionShare(){
-        if(playModel != null && !TextUtils.isEmpty(playModel?.hint)){
+    private fun askQuestionShare() {
+        if (playModel != null && !TextUtils.isEmpty(playModel?.hint)) {
             val intent = Intent(Intent.ACTION_SEND)
-            val shareBody = "Can you help me, it’s a "+ playModel?.numberOfCell+" letter word and clue is "+ playModel?.hint +"https://onelink.to/4e9bge"
+            val shareBody =
+                "Can you help me, it’s a " + playModel?.numberOfCell + " letter word and clue is " + playModel?.hint + "https://onelink.to/4e9bge"
             intent.type = "text/plain"
             intent.putExtra(
                 Intent.EXTRA_SUBJECT,
@@ -1713,7 +1952,12 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
 
     private fun interstitialAdd() {
         val adRequest = AdRequest.Builder().build()
-        InterstitialAd.load(this, PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_INTERTITIALS_AD_ID)!!, adRequest,
+        InterstitialAd.load(this,
+            PrefData.getStringPrefs(
+                this@EnglishVargPahleiGameActivity,
+                PrefData.Key.CROSSWORD_INTERTITIALS_AD_ID
+            )!!,
+            adRequest,
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
                     // The mInterstitialAd reference will be null until
@@ -1731,44 +1975,40 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
             })
     }
 
-    private fun initRewardAdd() {
+    private fun initHintInterstitialAds() {
         val adRequest = AdRequest.Builder().build()
-        RewardedAd.load(this, PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_REWARDED_AD_ID)!!,
-            adRequest, object : RewardedAdLoadCallback() {
-                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    // Handle the error.
-                    // Log.d(TAG, loadAdError.getMessage());
-                    mRewardedAd = null
-                }
 
-                override fun onAdLoaded(rewardedAd: RewardedAd) {
-                    mRewardedAd = rewardedAd
-                    // Log.d(TAG, "Ad was loaded.");
-                }
-            })
+        var adId: String =
+            PrefData.getStringPrefs(this, PrefData.Key.CROSSWORD_INTERTITIALS_AD_ID)!!;
+        var callBack: InterstitialAdLoadCallback = object : InterstitialAdLoadCallback() {
+
+
+            override fun onAdLoaded(p0: InterstitialAd) {
+
+                hintInterstitialAd = p0;
+                super.onAdLoaded(p0)
+            }
+
+            override fun onAdFailedToLoad(p0: LoadAdError) {
+
+                hintInterstitialAd = null;
+                super.onAdFailedToLoad(p0)
+            }
+        }
+
+        InterstitialAd.load(this, adId, adRequest, callBack);
     }
 
-    private fun showRewardAdd() {
-        if (mRewardedAd != null) {
-            mRewardedAd?.show(this, OnUserEarnedRewardListener { rewardItem -> // Handle the reward.
-                //  Log.d(TAG, "The user earned the reward.");
-                val rewardAmount = rewardItem.amount
-                val rewardType = rewardItem.type
 
-                // setHint()
-                initRewardAdd()
-                fillCompleteWord()
-            })
-            mRewardedAd?.setFullScreenContentCallback(object : FullScreenContentCallback() {
-                override fun onAdShowedFullScreenContent() {
-                    // Called when ad is shown.
-                    // Log.d(TAG, "Ad was shown.");
-                }
+    private fun showHintAds(callback: (() -> Unit)? = null) {
+        if (hintInterstitialAd != null) {
+            hintInterstitialAd?.show(this);
+            hintInterstitialAd?.setFullScreenContentCallback(object : FullScreenContentCallback() {
 
                 override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                     // Called when ad fails to show.
                     // Log.d(TAG, "Ad failed to show.");
-                    initRewardAdd()
+                    initHintInterstitialAds()
 
                 }
 
@@ -1776,36 +2016,55 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                     // Called when ad is dismissed.
                     // Set the ad reference to null so you don't show the ad a second time.
                     // Log.d(TAG, "Ad was dismissed.");
-                    mRewardedAd = null
-                    initRewardAdd()
+                    hintInterstitialAd = null
+                    initHintInterstitialAds()
+
+                    if(callback ==null){
+                        fillCompleteWord()
+                    }else{
+                        callback()
+                    }
+
                 }
             })
         } else {
             // Log.d(TAG, "The rewarded ad wasn't ready yet.");
-            Toast.makeText(this,"The rewarded ad wasn't ready yet.", Toast.LENGTH_LONG).show()
-            initRewardAdd()
+            Toast.makeText(this, "The Ad wasn't ready yet.", Toast.LENGTH_LONG).show()
+            initHintInterstitialAds()
         }
     }
 
     override fun onBackPressed() {
-        if(gameDate != null){
-            CommonUtils.saveGame(this,crossWordBoardItem, PrefData.Key.ENGLISH+gameDate.toString())
-            PrefData.setStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.QUESTION_NO_ENGLISH_GAME+gameDate.toString(),questionIndex.toString())
+        if (gameDate != null) {
+            CommonUtils.saveGame(
+                this,
+                crossWordBoardItem,
+                PrefData.Key.ENGLISH + gameDate.toString()
+            )
+            PrefData.setStringPrefs(
+                this@EnglishVargPahleiGameActivity,
+                PrefData.Key.QUESTION_NO_ENGLISH_GAME + gameDate.toString(),
+                questionIndex.toString()
+            )
 
 
-            if(tv_timer_text != null){
+            if (tv_timer_text != null) {
                 pauseOffset = SystemClock.elapsedRealtime() - tv_timer_text!!.base
-                PrefData.setLongPrefs(applicationContext, PrefData.Key.ENGLISH+PrefData.Key.PAUSE_OFF_SET+gameDate, pauseOffset)
+                PrefData.setLongPrefs(
+                    applicationContext,
+                    PrefData.Key.ENGLISH + PrefData.Key.PAUSE_OFF_SET + gameDate,
+                    pauseOffset
+                )
             }
         }
         finish()
         super.onBackPressed()
     }
 
-    fun showWinGif(){
-        if (PrefData.getSoundState(this@EnglishVargPahleiGameActivity)){
+    fun showWinGif() {
+        if (PrefData.getSoundState(this@EnglishVargPahleiGameActivity)) {
             mediaPlayerGameComplete?.start()
-        }else{
+        } else {
             mediaPlayerGameComplete?.pause()
         }
 
@@ -1838,24 +2097,26 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
             .into(findViewById(R.id.gif_icon))
     }
 
-    fun higlightSelectedHint(pos:Int){
+    fun higlightSelectedHint(pos: Int) {
         var index = -1
-        for (i in 0..crosswordPlayItem.size.minus(1)){
+        for (i in 0..crosswordPlayItem.size.minus(1)) {
             var playItem = crosswordPlayItem[i]
-            if(playItem.hintType == "across"){
+            if (playItem.hintType == "across") {
                 var value1 = playItem.cellColumn?.toInt()!!.minus(1).plus(
                     playItem.cellRow?.toInt()!!.minus(1)
                         ?.times(10)!!
                 )
 
-                var value2 = playItem.cellColumn?.toInt()!!.minus(1).plus(playItem.numberOfCell!!.toInt()).plus(
-                    playItem.cellRow?.toInt()!!.minus(1)
-                        ?.times(10)!!
-                )
-                if(pos in value1 until value2){
+                var value2 =
+                    playItem.cellColumn?.toInt()!!.minus(1).plus(playItem.numberOfCell!!.toInt())
+                        .plus(
+                            playItem.cellRow?.toInt()!!.minus(1)
+                                ?.times(10)!!
+                        )
+                if (pos in value1 until value2) {
 
                     index = i
-                    if(vargPahleiAdapter != null){
+                    if (vargPahleiAdapter != null) {
                         questionIndex = index
                         question?.text = crosswordPlayItem[questionIndex].hint.toString()
                         playGameSetup(playItem)
@@ -1863,14 +2124,16 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                     }
                     break
                 }
-            }else{
+            } else {
                 // var value1 = playItem.cellRow?.toInt()!!.minus(1).times(10).plus(playItem.cellColumn?.toInt()!!.minus(1))
                 var value1 = pos.mod(10).plus(1) == playItem.cellColumn!!.toInt()
                 //var value2 = playItem.cellRow?.toInt()!!.plus(playItem.numberOfCell!!.toInt()).times(10).plus(playItem.cellColumn?.toInt()!!.minus(1))
-                var value2 = (pos/10).plus(1) >= playItem.cellRow!!.toInt() && (pos/10).plus(1) < playItem.cellRow!!.toInt().plus(playItem.numberOfCell!!.toInt())
-                if(value1 && value2){
+                var value2 =
+                    (pos / 10).plus(1) >= playItem.cellRow!!.toInt() && (pos / 10).plus(1) < playItem.cellRow!!.toInt()
+                        .plus(playItem.numberOfCell!!.toInt())
+                if (value1 && value2) {
                     index = i
-                    if(vargPahleiAdapter != null){
+                    if (vargPahleiAdapter != null) {
                         questionIndex = index
                         question?.text = crosswordPlayItem[questionIndex].hint.toString()
                         playGameSetup(playItem)
@@ -1882,17 +2145,18 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         }
     }
 
-    fun fillCompleteWord(){
-        if(playModel != null){
-            if(playModel!!.hintType == "across"){
-                for (i in 0..playModel!!.numberOfCell!!.toInt().minus(1)){
-                    var value = (playModel?.cellRow!!.toInt().minus(1).times(10)).plus(i).plus(playModel?.cellColumn!!.toInt().minus(1))
+    fun fillCompleteWord() {
+        if (playModel != null) {
+            if (playModel!!.hintType == "across") {
+                for (i in 0..playModel!!.numberOfCell!!.toInt().minus(1)) {
+                    var value = (playModel?.cellRow!!.toInt().minus(1).times(10)).plus(i)
+                        .plus(playModel?.cellColumn!!.toInt().minus(1))
                     crossWordBoardItem[value].value = arrOfLetter[value]
                     crossWordBoardItem[value].isFreezed = true
                     crossWordBoardItem[value].isWronAnswer = false
                 }
 
-                if(questionIndex.plus(1) < crosswordPlayItem.size){
+                if (questionIndex.plus(1) < crosswordPlayItem.size) {
                     questionIndex += 1
                     question?.text = crosswordPlayItem[questionIndex].hint.toString()
                     playGameSetup(crosswordPlayItem[questionIndex])
@@ -1900,16 +2164,17 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                 vargPahleiAdapter!!.notifyDataSetChanged()
 
 
-            }else{
-                for (i in 0 until playModel!!.numberOfCell!!.toInt()){
-                    var value = ((playModel?.cellColumn!!.toInt() - 1) + ((playModel?.cellRow!!.toInt() - 1) * 10)) + (i * 10)
+            } else {
+                for (i in 0 until playModel!!.numberOfCell!!.toInt()) {
+                    var value =
+                        ((playModel?.cellColumn!!.toInt() - 1) + ((playModel?.cellRow!!.toInt() - 1) * 10)) + (i * 10)
                     crossWordBoardItem[value].value = arrOfLetter[value]
                     crossWordBoardItem[value].isFreezed = true
                     crossWordBoardItem[value].isWronAnswer = false
                 }
 
 
-                if(questionIndex.plus(1) < crosswordPlayItem.size){
+                if (questionIndex.plus(1) < crosswordPlayItem.size) {
                     questionIndex += 1
                     question?.text = crosswordPlayItem[questionIndex].hint.toString()
                     playGameSetup(crosswordPlayItem[questionIndex])
@@ -1917,10 +2182,10 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                 vargPahleiAdapter!!.notifyDataSetChanged()
             }
 
-            if(isAllDone()){
+            if (isAllDone()) {
                 // Toast.makeText(this,"All Done. Hurray", Toast.LENGTH_LONG).show()
                 showWinGif()
-                PrefData.setStringPrefs(this,gameDate.toString()+PrefData.Key.IS_DONE, "Done");
+                PrefData.setStringPrefs(this, gameDate.toString() + PrefData.Key.IS_DONE, "Done");
                 pauseOffset = SystemClock.elapsedRealtime() - tv_timer_text!!.base
 
                 Handler(Looper.myLooper()!!).postDelayed(Runnable {
@@ -1946,14 +2211,21 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
         val tvEngLang: TextView? = view.findViewById(R.id.tvEngLang)
         //  val lLayQuitGame: LinearLayout? = view.findViewById(R.id.lLayQuitGame)
 
-        if(PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_LANGAUGE)!=null &&
-            PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_APP_LANGUAGE).equals("hindi")){
+        if (PrefData.getStringPrefs(
+                this@EnglishVargPahleiGameActivity,
+                PrefData.Key.CROSSWORD_LANGAUGE
+            ) != null &&
+            PrefData.getStringPrefs(
+                this@EnglishVargPahleiGameActivity,
+                PrefData.Key.CROSSWORD_APP_LANGUAGE
+            ).equals("hindi")
+        ) {
             lLayHindiLang?.setBackgroundColor(Color.BLACK);
             lLayEnglishLang?.setBackgroundColor(Color.WHITE);
 
             tvHindiLang?.setTextColor(Color.parseColor("#FFFFFF"));
             tvEngLang?.setTextColor(Color.parseColor("#000000"));
-        }else{
+        } else {
             lLayEnglishLang?.setBackgroundColor(Color.BLACK);
             lLayHindiLang?.setBackgroundColor(Color.WHITE);
 
@@ -1964,11 +2236,18 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
 
         lLayHindiLang?.setOnClickListener {
 
-            if(PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_LANGAUGE)!=null &&
-                PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_APP_LANGUAGE).equals("hindi")) {
+            if (PrefData.getStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.CROSSWORD_LANGAUGE
+                ) != null &&
+                PrefData.getStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.CROSSWORD_APP_LANGUAGE
+                ).equals("hindi")
+            ) {
 
                 lLayHindiLang?.isClickable = false
-            }else{
+            } else {
 
                 lLayHindiLang?.setBackgroundColor(Color.BLACK);
                 lLayEnglishLang?.setBackgroundColor(Color.WHITE);
@@ -1978,17 +2257,31 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
 
                 bottomSheetDialog.dismiss()
                 VargPaheliLanguagePreference.getInstance(baseContext).setLanguage("hi")
-                PrefData.setStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_LANGAUGE,PrefData.Key.HINDI)
-                PrefData.setStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_APP_LANGUAGE,PrefData.Key.HINDI)
+                PrefData.setStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.CROSSWORD_LANGAUGE,
+                    PrefData.Key.HINDI
+                )
+                PrefData.setStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.CROSSWORD_APP_LANGUAGE,
+                    PrefData.Key.HINDI
+                )
 
-                if(!TextUtils.isEmpty(PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.GAME_USER_ID))) {
+                if (!TextUtils.isEmpty(
+                        PrefData.getStringPrefs(
+                            this@EnglishVargPahleiGameActivity,
+                            PrefData.Key.GAME_USER_ID
+                        )
+                    )
+                ) {
                     val intent = Intent(this, VargPaheliGameActivity::class.java)
-                    intent.putExtra("DATE_GAME",date_for_puzzle)
+                    intent.putExtra("DATE_GAME", date_for_puzzle)
                     intent.flags =
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
                     finish()
-                }else{
+                } else {
                     val intent = Intent(this, VargPaheliGameActivity::class.java)
                     intent.flags =
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -2006,17 +2299,31 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
 
             bottomSheetDialog.dismiss()
             VargPaheliLanguagePreference.getInstance(baseContext).setLanguage("hi")
-            PrefData.setStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_LANGAUGE,PrefData.Key.HINDI)
-            PrefData.setStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_APP_LANGUAGE,PrefData.Key.HINDI)
+            PrefData.setStringPrefs(
+                this@EnglishVargPahleiGameActivity,
+                PrefData.Key.CROSSWORD_LANGAUGE,
+                PrefData.Key.HINDI
+            )
+            PrefData.setStringPrefs(
+                this@EnglishVargPahleiGameActivity,
+                PrefData.Key.CROSSWORD_APP_LANGUAGE,
+                PrefData.Key.HINDI
+            )
 
-            if(!TextUtils.isEmpty(PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.GAME_USER_ID))) {
+            if (!TextUtils.isEmpty(
+                    PrefData.getStringPrefs(
+                        this@EnglishVargPahleiGameActivity,
+                        PrefData.Key.GAME_USER_ID
+                    )
+                )
+            ) {
                 val intent = Intent(this, VargPaheliGameActivity::class.java)
-                intent.putExtra("DATE_GAME",date_for_puzzle)
+                intent.putExtra("DATE_GAME", date_for_puzzle)
                 intent.flags =
                     Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
                 finish()
-            }else{
+            } else {
                 val intent = Intent(this, VargPaheliGameActivity::class.java)
                 intent.flags =
                     Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -2026,12 +2333,19 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
 
         }
 
-        lLayEnglishLang?.setOnClickListener{
+        lLayEnglishLang?.setOnClickListener {
 
-            if(PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_LANGAUGE)!=null &&
-                PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_APP_LANGUAGE).equals("english")) {
+            if (PrefData.getStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.CROSSWORD_LANGAUGE
+                ) != null &&
+                PrefData.getStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.CROSSWORD_APP_LANGUAGE
+                ).equals("english")
+            ) {
                 lLayEnglishLang.isClickable = true
-            }else{
+            } else {
 
                 lLayEnglishLang?.setBackgroundColor(Color.BLACK);
                 lLayHindiLang?.setBackgroundColor(Color.WHITE);
@@ -2042,20 +2356,34 @@ class EnglishVargPahleiGameActivity : VargPaheliBaseActivity(), View.OnClickList
                 bottomSheetDialog.dismiss()
 
                 VargPaheliLanguagePreference.getInstance(baseContext).language = ""
-                PrefData.setStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_LANGAUGE,PrefData.Key.ENGLISH)
-                PrefData.setStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.CROSSWORD_APP_LANGUAGE,PrefData.Key.ENGLISH)
+                PrefData.setStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.CROSSWORD_LANGAUGE,
+                    PrefData.Key.ENGLISH
+                )
+                PrefData.setStringPrefs(
+                    this@EnglishVargPahleiGameActivity,
+                    PrefData.Key.CROSSWORD_APP_LANGUAGE,
+                    PrefData.Key.ENGLISH
+                )
 
-                if(!TextUtils.isEmpty(PrefData.getStringPrefs(this@EnglishVargPahleiGameActivity,PrefData.Key.GAME_USER_ID))) {
+                if (!TextUtils.isEmpty(
+                        PrefData.getStringPrefs(
+                            this@EnglishVargPahleiGameActivity,
+                            PrefData.Key.GAME_USER_ID
+                        )
+                    )
+                ) {
                     val intent = Intent(this, EnglishVargPahleiGameActivity::class.java)
-                    intent.putExtra("DATE_GAME",date_for_puzzle)
+                    intent.putExtra("DATE_GAME", date_for_puzzle)
                     intent.flags =
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
                     finish()
-                }else{
+                } else {
 
                     val intent = Intent(this, EnglishVargPahleiGameActivity::class.java)
-                    intent.putExtra("DATE_GAME",date_for_puzzle)
+                    intent.putExtra("DATE_GAME", date_for_puzzle)
                     intent.flags =
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
